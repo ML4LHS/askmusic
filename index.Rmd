@@ -1,0 +1,397 @@
+---
+title: 'Jake Huang Sample askMUSIC Website'
+author: 'Jake Huang'
+date: '6/29/2020'
+output: html_document
+runtime: shiny_prerendered
+---
+
+```{r context='setup',include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(shiny)
+library(tidyverse)
+library(stringr)
+library(RColorBrewer)
+library(h2o)
+
+# x must be 0-100
+round_to_largest_remainder = function (x) {
+  stopifnot(x >= 0 & x <= 100 & dplyr::near(sum(x),100))
+
+  trunc_decimal = function (x) {x - trunc(x)}
+  
+    lr_data = tibble(
+    original = x,
+    integer_vals = trunc(x),
+    decimal_vals = trunc_decimal(x)
+  ) %>% 
+    mutate(row_num = row_number()) %>% 
+    arrange(desc(original)) %>% 
+    mutate(decimal_rank = row_number(desc(decimal_vals)))
+  
+  while (sum(lr_data$integer_vals) < 100)
+  {
+    lr_data = lr_data %>% 
+      mutate(integer_vals = case_when(
+        decimal_rank == min(decimal_rank)~integer_vals+1,
+        TRUE~integer_vals
+      )) %>% 
+      mutate(decimal_rank = case_when(
+        decimal_rank == min(decimal_rank)~decimal_rank+n(),
+        TRUE~decimal_rank
+      )) %>% 
+      arrange(row_num)
+  }
+  
+  lr_data$integer_vals
+}
+```
+
+```{r context='server-start', include=FALSE}
+# h2o::h2o.init(startH2O =TRUE)
+```
+
+```{r context='server', include=FALSE}
+# h2o::h2o.init(startH2O=FALSE)
+
+# tx_model = h2o::h2o.loadModel('tx_model_nomets_recent2yrs')
+
+# session$onSessionEnded(function() {
+#  h2o::h2o.shutdown(prompt=FALSE)
+#})
+```
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
+
+<script>
+Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
+  $('html, body').animate({
+      scrollTop: $("#"+targetid).offset().top - 75
+  }, 1000);
+});
+</script>
+
+
+```{r tx_input}
+h1("Learn More About Your Treatment Options")
+h4('This tool is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.')
+
+wellPanel(style = "background: #FFF;",
+          h4('This tool does not apply to situations where the cancer is metastatic.'),
+          flowLayout(
+            selectInput('tx_clinmstg',
+                        'Is the cancer metastatic?',choices=c('Yes','No'),selected='No')
+          ),
+          h4('Please enter the following information.'),
+          flowLayout(
+            numericInput('tx_age','Age',min=45,max=85,step=1,value = 66),
+            numericInput('tx_psa','PSA (ng/mL)',value=6,min=0,step=1),
+            selectInput('tx_bxgs_1','Primary Gleason score',
+                        c('Less than or equal to 3'=3,
+                          '4'=4,
+                          '5'=5),
+                        selected=3),
+            selectInput('tx_bxgs_2','Secondary Gleason score',
+                        c('Less than or equal to 3'=3,
+                          '4'=4,
+                          '5'=5),
+                        selected=3),
+          selectInput('tx_mi','Have you ever had a heart attack?',choices=c('Yes','No'),selected='No'),
+          selectInput('tx_diab','Do you have diabetes?',choices=c('Yes','No'),selected='No'),
+          numericInput('tx_wgt','Weight (lbs)',value=198,min=100,max=350,step=10)),
+          h4('The following information are optional, but filling them IN FULL will help us give you better recommendations for the appropriate treatment'),
+            # numericInput('tx_poscores','Biopsy cores with cancer',3),
+            # 1,5,18 are weighted mean for respective categories
+          flowLayout(sliderInput('tx_poscores','Biopsy cores with cancer',
+                        min=1,
+                        max=14,
+                        step=1,
+                        value=3,
+                        dragRange=FALSE),
+            # numericInput('tx_totcores','Total cores taken',12),
+            # 1,12,34 are weighted mean for respective categories
+            sliderInput('tx_totcores','Total cores taken',
+                        min=1,
+                        max=24,
+                        step=1,
+                        value=12,
+                        dragRange=FALSE),
+          selectInput('tx_t', 'Enter your T of TNM', choices=c('Do not know', 'T1', 'T2a', 'T2b', 'T2c', 'T3a', 'T3b', 'T4'), selected='Do not know'),
+          selectInput('tx_n', 'Enter your N of TNM', choices=c('Do not know', 'N0', 'N1'), selected='Do not know'),
+          #selectInput('tx_m', 'Enter your M of TNM', choices=c('Do not know', 'N0', 'N1'), selected='Do not know'),
+          selectInput('tx_corestats', 'Do you have any cores with more than 50% cancer?', choices=c('Do not know', 'Yes', 'No'), selected='Do not know')),
+          br(),
+          actionButton('tx_start','Calculate')
+)
+
+```
+
+```{r tx_output}
+
+conditionalPanel('input.tx_start>0 && (input.tx_t == "Do not know" || input.tx_n == "Do not know" || input.tx_corestats == "Do not know")',
+                 wellPanel(
+                   h3("Sorry, need ALL the info")
+                 ))
+
+conditionalPanel('input.tx_start>0 && (input.tx_t != "Do not know" && input.tx_n != "Do not know" && input.tx_corestats != "Do not know")',
+                 wellPanel(
+                   h1(textOutput('risk_label')),
+                   h5("Our Recommendations: "),
+                   h5(htmlOutput('rec'))
+                 ))
+
+conditionalPanel('input.tx_start>0 && (input.tx_wgt<100 || input.tx_wgt>350)',
+                 wellPanel(
+                   h3('Weight must be between 100 and 350 pounds.')
+                 ))
+
+# for poscores, selectinput: unknown, 1 or less, 2-13, 14 or more: DONE
+
+# for totcores, selectinput: unknown, 1 or less, 2-23, 24 or more, unknown: DONE
+
+# include check to ensure totcores >= poscores:
+conditionalPanel('input.tx_start>0 && input.tx_poscores>input.tx_totcores',
+                 wellPanel(
+                   h3('The number of positive cores cannot be greater than the number of total cores.')
+                 ))
+
+conditionalPanel('input.tx_start>0 && input.tx_clinmstg=="Yes"',
+                 wellPanel(
+                   h3('For metastatic disease, please discuss treatment options with your urologist.')
+                 ))
+
+conditionalPanel('input.tx_start>0 && input.tx_psa <= 0.05',
+                 wellPanel(
+                   h3('Prostate specific antigen (PSA) must be greater than 0.05 ng/mL.')
+                 ))
+
+conditionalPanel('input.tx_start>0 && (input.tx_age < 45 || input.tx_age > 85)',
+                 wellPanel(
+                   h3('Age must be between 45 and 85 years old.')
+                 ))
+
+conditionalPanel('input.tx_start>0 && input.tx_psa > 0.05 && input.tx_age >=45 && input.tx_age <= 85 && input.tx_clinmstg=="No" && input.tx_wgt>=100 && input.tx_wgt<=350 && !(input.tx_poscores>input.tx_totcores)',
+                 wellPanel(id='tx_results',style = "background: #FFF;",
+                   h3('What treatment did similar patients choose in the MUSIC registry?'),
+                   plotOutput('tx_graph_risk')
+                   )
+)
+
+                
+####
+```
+
+```{r tx_predictions, context='server'}
+
+
+  observeEvent(input$tx_start, {
+    session$sendCustomMessage('scrolltoresults', 'tx_results')
+  })
+
+tx_model_predictions = reactive({
+  pred_data = tibble(age = input$tx_age,
+                     psa = input$tx_psa,
+                     bxgs1 = as.integer(input$tx_bxgs_1),
+                     bxgs2 = as.integer(input$tx_bxgs_2),
+                     bxgs = as.integer(input$tx_bxgs_1) + as.integer(input$tx_bxgs_2),
+                     totcores = as.integer(input$tx_totcores),
+                     poscores = as.integer(input$tx_poscores),
+                     wgt = input$tx_wgt,
+                     mi = factor(input$tx_mi,levels=c('No','Yes')),
+                     diab = factor(input$tx_diab,levels=c('No','Yes'))
+                     )
+  
+  # predictions = predict(trained_model,newdata = pred_data)
+  # predictions$data
+  
+  # predictions = h2o.predict(tx_model,newdata = as.h2o(pred_data)) %>% as.data.frame()
+  # '[{"age":66,"psa":6,"bxgs":7,"totcores":12,"poscores":3,"wgt":198,"mi":"No","diab":"No"}]') %>%
+  predictions = 
+    h2o.predict_json('tx_model_nomets_pub.zip', pred_data %>% as.tibble() %>% jsonlite::toJSON()) %>% 
+    pull(classProbabilities) %>% unlist() %>%
+    setNames(c('Active_surveillance','Androgen_deprivation_therapy','Radiation','Radical_prostatectomy','Watchful_waiting')) %>% 
+    bind_rows()
+  predictions
+})
+
+tx_graph_risk = reactive({
+  tx_model_predictions() %>%
+    gather(treatment,probability,Active_surveillance:Watchful_waiting) %>% 
+    # mutate(treatment = str_replace(treatment,'prob.','')) %>% 
+    mutate(treatment = str_replace_all(treatment,'_','\n')) %>% 
+    # mutate(mid_y = cumsum(risk)-0.5*risk) %>% 
+    mutate(mid_y = 0.5*probability) %>% 
+    # ungroup %>% 
+    ggplot(aes(x=reorder(treatment,probability),y=probability,fill=treatment)) +
+    geom_bar(stat='identity') +
+    guides(fill = guide_legend(reverse=TRUE)) +
+    theme_minimal() +
+    # scale_fill_brewer(palette='Set3') +
+    # scale_fill_manual(values=rev(brewer.pal(3,'Set3'))) + 
+    theme(#legend.position='bottom',
+          #legend.text=element_text(size = rel(1)),
+          legend.position='none',
+          axis.text.x=element_blank(),
+          axis.text.y=element_text(size=rel(1.5)),
+          panel.grid.major.x=element_blank(),
+          panel.grid.minor.x=element_blank()) +
+    geom_text(aes(label=paste0(round_to_largest_remainder(probability*100),'%'),y=mid_y),size=6) +
+    coord_flip(ylim=c(0,1)) +
+    labs(fill='',x='',y='')
+})
+
+  output$tx_graph_risk = renderPlot(tx_graph_risk())
+  
+  
+  
+# HERE IS MY CODE
+gg = ''
+ggfind = reactive({
+  b1 = as.integer(input$tx_bxgs_1)
+  b2 = as.integer(input$tx_bxgs_2)
+  if ((b1 + b2) == 6) {
+    gg = 'GG1'
+  } else if (b1 == 3 && b2 == 4) {
+    gg = 'GG2'
+  } else if (b1 == 4 && b2 == 3) {
+    gg = 'GG3'
+  } else if ((b1 + b2) == 8) {
+    gg = 'GG4'
+  } else if ((b1 + b2) >= 9){
+    gg = 'GG5'
+  }
+  gg
+})
+
+# LOW RISK
+low_risk = reactive({
+  if ((input$tx_t == 'T1' || input$tx_t == 'T2a') &&  
+      ggfind() == 'GG1' &&
+      input$tx_psa < 10) {
+    return(TRUE)
+  }
+  return(FALSE)
+})
+
+# FAVORABLE RISK
+#what is low-volume?
+favorable_risk = reactive({
+  gg_val = ggfind()
+  if (gg_val == 'GG1' || gg_val == 'GG2') {
+    if ((input$tx_poscores <= 3) && input$tx_corestats == 'No') {
+      return(TRUE)
+    }
+  }
+  return(FALSE)
+})
+
+# UNFAVORABLE INTERMEDIATE RISK
+unfavorable_int_risk = reactive({
+  gg_val = ggfind()
+  psa = input$tx_psa
+  counter = 0
+  
+  if(input$tx_t == 'T2b' || input$tx_t == 'T2c') {
+    counter = counter + 1
+  }
+  
+  if (gg_val == 'GG2' || gg_val == 'GG3') {
+    counter = counter + 1
+  }
+  
+  if (psa >= 10 && psa <= 20) {
+    counter = counter + 1
+  }
+  
+  if (gg_val == 'GG3' && input$tx_corestats == 'Yes') {
+    counter = counter + 1
+  }
+  
+  if (counter >= 2) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+})
+
+# HIGH RISK
+high_risk = reactive({
+  gg_val = ggfind()
+  t_val = input$tx_t
+  
+  if (t_val == 'T3a') {
+    return(TRUE)
+  } else if (gg_val == 'GG4' || gg_val == 'GG5') {
+    return(TRUE)
+  } else if (input$tx_psa > 20) {
+    return(TRUE)
+  }
+  
+  return(FALSE)
+})
+
+# VERY HIGH RISK
+very_high_risk = reactive({
+  gg_val = ggfind()
+  b1 = as.integer(input$tx_bxgs_1)
+  
+  if (input$tx_t == 'T3b' || input$tx_t == 'T4') {
+    return(TRUE)
+  } else if (b1 == 5) {
+    return(TRUE)
+  }
+  
+  return(FALSE)
+})
+
+op = ''
+risk_group = reactive({
+  
+  if (very_high_risk()) {
+    op = 'Very High Risk'
+  } else if (high_risk()) {
+    op = 'High Risk'
+  } else if (unfavorable_int_risk()) {
+    op = 'Unfavorable Intermediate Risk'
+  } else if (favorable_risk()) {
+    op = 'Favorable Risk'
+  } else if (low_risk()) {
+    op = 'Low Risk'
+  } else {
+    stop('No Match!')
+  }
+  
+  op
+})
+
+# RECOMMENDATIONS
+t_low_risk = 'If your life expectancy is >10 years: Active Surveillance (preferred), EBRT or brachytherapy, RP <br> If your life expentancy is <10 years: Watchful Waiting'
+
+t_fav_risk = 'If your life expectancy is >10 years: Consider Active Surveillance <br> If your life expectancy is <10 years: Watchful Waiting'
+
+t_unfav_int_risk = 'If your life expectancy is >10 years: Radical prostatectomy, EBRT, EBRT with 4 months of ADT, EBRT with brachytherapy, EBRT with brachytherapy and 4 months of ADT <br> If your life expectancy is <10 years: Watchful Waiting (preferred), EBRT +/- ADT, EBRt + brachytherapy, EBRT + brachytherapy + ADT'
+
+t_high_risk ='If your life expectancy is >5 years: EBRT with 18 months - 3 years of ADT, EBRT with brachytherapy and 1-3 years of ADT, radical prostatectomy <br> If your life expectancy is <5 years: Watchful Waiting, ADT, EBRT'
+
+t_very_high_risk = 'If your life expectancy is <5 years: Watchful Waiting, ADT, EBRT <br> If your life expectancy is >5 years: EBRT + ADT, EBRT + brachytherapy + ADT, radical prostatectomy'
+
+output$risk_label <- renderText({
+  paste("You are at: ", risk_group())
+})
+
+output$rec <- renderUI({
+  switch(
+    risk_group(),
+    'Very High Risk'=HTML(t_very_high_risk),
+    'High Risk'=HTML(t_high_risk),
+    'Unfavorable Intermediate Risk'=HTML(t_unfav_int_risk),
+    'Favorable Risk'=HTML(t_fav_risk),
+    'Low Risk'=HTML(t_low_risk)
+  )
+  
+  #paste('num of cores with cancer: ', input$tx_poscores)
+  
+})
+
+
+```
