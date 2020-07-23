@@ -259,9 +259,6 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 <input id="tx_wgt" type="number" class="form-control" value="198" min="100" max="350" step="10"/>
 </div>
 </div>
-</div>
-<h4>The following information are optional, but filling them IN FULL will help us give you better recommendations for the appropriate treatment</h4>
-<div class="shiny-flow-layout">
 <div>
 <div class="form-group shiny-input-container">
 <label class="control-label" for="tx_poscores">Biopsy cores with cancer</label>
@@ -274,7 +271,8 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 <input class="js-range-slider" id="tx_totcores" data-min="1" data-max="24" data-from="12" data-step="1" data-grid="true" data-grid-num="7.66666666666667" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/>
 </div>
 </div>
-<div>
+</div>
+<h4>The following information are optional, but filling them IN FULL will help us give you better recommendations for the appropriate treatment</h4>
 <div class="form-group shiny-input-container">
 <label class="control-label" for="tx_t">Enter your T of TNM</label>
 <div>
@@ -289,8 +287,6 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 <script type="application/json" data-for="tx_t" data-nonempty="">{}</script>
 </div>
 </div>
-</div>
-<div>
 <div class="form-group shiny-input-container">
 <label class="control-label" for="tx_n">Enter your N of TNM</label>
 <div>
@@ -300,8 +296,6 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 <script type="application/json" data-for="tx_n" data-nonempty="">{}</script>
 </div>
 </div>
-</div>
-<div>
 <div class="form-group shiny-input-container">
 <label class="control-label" for="tx_corestats">Do you have any cores with more than 50% cancer?</label>
 <div>
@@ -309,8 +303,6 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 <option value="Yes">Yes</option>
 <option value="No">No</option></select>
 <script type="application/json" data-for="tx_corestats" data-nonempty="">{}</script>
-</div>
-</div>
 </div>
 </div>
 <br/>

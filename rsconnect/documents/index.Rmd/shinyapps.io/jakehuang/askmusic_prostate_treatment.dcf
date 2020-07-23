@@ -1,0 +1,12 @@
+name: askmusic_prostate_treatment
+title: askmusic_prostate_treatment
+username:
+account: jakehuang
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2604468
+bundleId: 3425110
+url: https://jakehuang.shinyapps.io/askmusic_prostate_treatment/
+when: 1595491821.9268
+asMultiple: FALSE
+asStatic: FALSE
