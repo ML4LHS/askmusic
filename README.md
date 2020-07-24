@@ -3,7 +3,7 @@ https://mybinder.org/v2/gh/ML4LHS/askmusic_prostate_treatment/e6707e417d465898f4
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ML4LHS/askmusic_prostate_treatment/master)
 
 check this out:
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ML4LHS/askmusic_prostate_treatment/master/shiny/index-folder/)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ML4LHS/askmusic_prostate_treatment/shiny/index-folder/)
 
 
 To build this application on your local Rstudio, please make sure your Java version is:
