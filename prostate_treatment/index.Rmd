@@ -22,9 +22,9 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 
 ```{r context='setup',include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-library(shiny)
-library(tidyverse)
+library(dplyr)
 library(stringr)
+library(shiny)
 library(RColorBrewer)
 library(h2o)
 
