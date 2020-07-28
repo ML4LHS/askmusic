@@ -4,8 +4,8 @@ output: html_document
 runtime: shiny_prerendered
 ---
 
-# ![](askmusic_logo.jpg){width=10%} Learn More About Your Treatment Options
-#### This tool is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.
+# ![](images/askmusic_logo.jpg){width=10%} Prostate Cancer Treatment Options
+#### This app is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.
 
 
 <script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
@@ -26,9 +26,13 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 
 ```{r context='setup',include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+library(tibble)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
 library(stringr)
 library(shiny)
+library(jsonlite)
 library(RColorBrewer)
 library(h2o)
 
