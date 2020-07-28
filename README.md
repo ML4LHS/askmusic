@@ -1,10 +1,6 @@
-# askmusic_prostate_treatment
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ML4LHS/askmusic_prostate_treatment/master?urlpath=shiny/index-folder/)
+# Welcome to the askMUSIC GitHub repository
 
-To build this application on your local Rstudio, please make sure your Java version is:
+All of the askMUSIC apps are in the process of being moved to GitHub to promote open collaboration and sharing of data
 
-java version "1.8.0_161"<br/>
-Java(TM) SE Runtime Environment (build 1.8.0_161-b12)<br/>
-Java HotSpot(TM) 64-Bit Server VM (build 25.161-b12, mixed mode)<br/>
-
-Apologies beforehand if you have to downgrade your Java :(
+## Prostate Treatment Options
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ML4LHS/askmusic_prostate_treatment/master?urlpath=shiny/prostate_treatment/)
