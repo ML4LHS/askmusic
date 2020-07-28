@@ -1,5 +1,4 @@
 install.packages("shiny")
 install.packages("tidyverse")
-install.packages("stringr")
 install.packages("RColorBrewer")
 install.packages("h2o")
