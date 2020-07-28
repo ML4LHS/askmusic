@@ -4,6 +4,10 @@ output: html_document
 runtime: shiny_prerendered
 ---
 
+# ![](askmusic_logo.jpg){width=10%} Learn More About Your Treatment Options
+#### This tool is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.
+
+
 <script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
 
 <script>
@@ -62,9 +66,6 @@ round_to_largest_remainder = function (x) {
 ```
 
 ```{r tx_input}
-h1("Learn More About Your Treatment Options")
-h4('This tool is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.')
-
 wellPanel(style = "background: #FFF;",
           h4('This tool does not apply to situations where the cancer is metastatic.'),
           flowLayout(
