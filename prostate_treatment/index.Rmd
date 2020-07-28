@@ -1,10 +1,24 @@
 ---
-title: 'Jake Huang Sample askMUSIC Website'
-author: 'Jake Huang'
-date: '6/29/2020'
+title: ''
 output: html_document
 runtime: shiny_prerendered
 ---
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
+
+<script>
+Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
+  $('html, body').animate({
+      scrollTop: $("#"+targetid).offset().top - 75
+  }, 1000);
+});
+</script>
+
+<style>
+* {
+ font-family: Roboto, sans-serif !important;
+}
+</style>
 
 ```{r context='setup',include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -46,31 +60,6 @@ round_to_largest_remainder = function (x) {
   lr_data$integer_vals
 }
 ```
-
-```{r context='server-start', include=FALSE}
-# h2o::h2o.init(startH2O =TRUE)
-```
-
-```{r context='server', include=FALSE}
-# h2o::h2o.init(startH2O=FALSE)
-
-# tx_model = h2o::h2o.loadModel('tx_model_nomets_recent2yrs')
-
-# session$onSessionEnded(function() {
-#  h2o::h2o.shutdown(prompt=FALSE)
-#})
-```
-
-<script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
-
-<script>
-Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
-  $('html, body').animate({
-      scrollTop: $("#"+targetid).offset().top - 75
-  }, 1000);
-});
-</script>
-
 
 ```{r tx_input}
 h1("Learn More About Your Treatment Options")
