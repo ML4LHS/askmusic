@@ -276,7 +276,11 @@ low_risk = reactive({
 #what is low-volume?
 favorable_risk = reactive({
   gg_val = ggfind()
-  if (gg_val == 'GG1' || gg_val == 'GG2') {
+  if (gg_val == 'GG1' && !low_risk()) {
+    return(TRUE)
+  }
+  
+  if (gg_val == 'GG2') {
     if ((input$tx_poscores <= 3) && input$tx_corestats == 'No') {
       return(TRUE)
     }
