@@ -469,9 +469,9 @@ ggfind = reactive({
   b2 = as.integer(input$tx_bxgs_2)
   if ((b1 + b2) == 6) {
     gg = 'GG1'
-  } else if (b1 == 3 && b2 == 4) {
+  } else if (b1 == 3 & b2 == 4) {
     gg = 'GG2'
-  } else if (b1 == 4 && b2 == 3) {
+  } else if (b1 == 4 & b2 == 3) {
     gg = 'GG3'
   } else if ((b1 + b2) == 8) {
     gg = 'GG4'
@@ -483,8 +483,8 @@ ggfind = reactive({
 
 # LOW RISK
 low_risk = reactive({
-  if ((input$tx_t == 'T1' || input$tx_t == 'T2a') &&  
-      ggfind() == 'GG1' &&
+  if ((input$tx_t == 'T1' | input$tx_t == 'T2a') &
+      ggfind() == 'GG1' &
       input$tx_psa < 10) {
     return(TRUE)
   }
@@ -492,15 +492,14 @@ low_risk = reactive({
 })
 
 # FAVORABLE RISK
-#what is low-volume?
 favorable_risk = reactive({
   gg_val = ggfind()
-  if (gg_val == 'GG1' && !low_risk()) {
+  if (gg_val == 'GG1' & !low_risk()) {
     return(TRUE)
   }
   
   if (gg_val == 'GG2') {
-    if ((input$tx_poscores <= 3) && input$tx_corestats == 'No') {
+    if ((input$tx_poscores <= 3) & input$tx_corestats == 'No') {
       return(TRUE)
     }
   }
@@ -513,19 +512,19 @@ unfavorable_int_risk = reactive({
   psa = input$tx_psa
   counter = 0
   
-  if(input$tx_t == 'T2b' || input$tx_t == 'T2c') {
+  if(input$tx_t == 'T2b' | input$tx_t == 'T2c') {
     counter = counter + 1
   }
   
-  if (gg_val == 'GG2' || gg_val == 'GG3') {
+  if (gg_val == 'GG2' | gg_val == 'GG3') {
     counter = counter + 1
   }
   
-  if (psa >= 10 && psa <= 20) {
+  if (psa >= 10 & psa <= 20) {
     counter = counter + 1
   }
   
-  if (gg_val == 'GG3' && input$tx_corestats == 'Yes') {
+  if (gg_val == 'GG3' & input$tx_corestats == 'Yes') {
     counter = counter + 1
   }
   
@@ -543,7 +542,7 @@ high_risk = reactive({
   
   if (t_val == 'T3a') {
     return(TRUE)
-  } else if (gg_val == 'GG4' || gg_val == 'GG5') {
+  } else if (gg_val == 'GG4' | gg_val == 'GG5') {
     return(TRUE)
   } else if (input$tx_psa > 20) {
     return(TRUE)
@@ -557,7 +556,7 @@ very_high_risk = reactive({
   gg_val = ggfind()
   b1 = as.integer(input$tx_bxgs_1)
   
-  if (input$tx_t == 'T3b' || input$tx_t == 'T4') {
+  if (input$tx_t == 'T3b' | input$tx_t == 'T4') {
     return(TRUE)
   } else if (b1 == 5) {
     return(TRUE)
