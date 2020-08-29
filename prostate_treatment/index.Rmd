@@ -129,14 +129,15 @@ wellPanel(style = "background: #FFF;",
 
 conditionalPanel('input.tx_start>0 && (input.tx_t == "Do not know" || input.tx_n == "Do not know" || input.tx_corestats == "Do not know")',
                  wellPanel(
-                   h3("Sorry, need ALL the info")
+                   h3("You need to fill out all the optional information for us to give you a recommended treatment")
                  ))
 
 conditionalPanel('input.tx_start>0 && (input.tx_t != "Do not know" && input.tx_n != "Do not know" && input.tx_corestats != "Do not know")',
                  wellPanel(
                    h1(textOutput('risk_label')),
                    h5("Our Recommendations: "),
-                   h5(htmlOutput('rec'))
+                   h5(htmlOutput('rec')),
+                   h5(htmlOutput('ascore'))
                  ))
 
 conditionalPanel('input.tx_start>0 && (input.tx_wgt<100 || input.tx_wgt>350)',
@@ -172,10 +173,9 @@ conditionalPanel('input.tx_start>0 && (input.tx_age < 45 || input.tx_age > 85)',
 conditionalPanel('input.tx_start>0 && input.tx_psa > 0.05 && input.tx_age >=45 && input.tx_age <= 85 && input.tx_clinmstg=="No" && input.tx_wgt>=100 && input.tx_wgt<=350 && !(input.tx_poscores>input.tx_totcores)',
                  wellPanel(id='tx_results',style = "background: #FFF;",
                    h3('What treatment did similar patients choose in the MUSIC registry?'),
+                   h5(htmlOutput('as_msg')),
                    plotOutput('tx_graph_risk')
-                   )
-)
-
+                   ))
                 
 ####
 ```
@@ -187,46 +187,112 @@ conditionalPanel('input.tx_start>0 && input.tx_psa > 0.05 && input.tx_age >=45 &
     session$sendCustomMessage('scrolltoresults', 'tx_results')
   })
 
+# OLD PREDICTION MODEL
+# tx_model_predictions = reactive({
+#   pred_data = tibble(age = input$tx_age,
+#                      psa = input$tx_psa,
+#                      bxgs1 = as.integer(input$tx_bxgs_1),
+#                      bxgs2 = as.integer(input$tx_bxgs_2),
+#                      bxgs = as.integer(input$tx_bxgs_1) + as.integer(input$tx_bxgs_2),
+#                      totcores = as.integer(input$tx_totcores),
+#                      poscores = as.integer(input$tx_poscores),
+#                      wgt = input$tx_wgt,
+#                      mi = factor(input$tx_mi,levels=c('No','Yes')),
+#                      diab = factor(input$tx_diab,levels=c('No','Yes'))
+#                      )
+#   
+#   # predictions = predict(trained_model,newdata = pred_data)
+#   # predictions$data
+#   
+#   # predictions = h2o.predict(tx_model,newdata = as.h2o(pred_data)) %>% as.data.frame()
+#   # '[{"age":66,"psa":6,"bxgs":7,"totcores":12,"poscores":3,"wgt":198,"mi":"No","diab":"No"}]') %>%
+#   predictions = 
+#     h2o.predict_json('tx_model_nomets_pub.zip', pred_data %>% as.tibble() %>% jsonlite::toJSON()) %>% 
+#     pull(classProbabilities) %>% unlist() %>%
+#     setNames(c('Active_surveillance','Androgen_deprivation_therapy','Radiation','Radical_prostatectomy','Watchful_waiting')) %>% 
+#     bind_rows()
+#   predictions
+# })
+
+###BASED ON LYNA'S PSEUDO-CODE:
+#
+# This function returns user's anomally score (hence as)
+as <- reactive({
+  age_rc = as.integer(input$tx_age)
+  psa = as.integer(input$tx_psa)
+  bxgs1 = as.integer(input$tx_bxgs_2)
+  bxgs2 = as.integer(input$tx_bxgs_2)
+  bxgs = bxgs1 + bxgs2
+  totcores = as.integer(input$tx_totcores)
+  poscores = as.integer(input$tx_poscores)
+  wgt = as.integer(input$tx_wgt)
+  mi = input$tx_mi
+  diab = input$tx_diab
+ 
+  # create data frame based on user input
+  x <- data.frame(age_rc,
+                 psa,
+                 bxgs,
+                 bxgs1,
+                 bxgs2,
+                 totcores,
+                 poscores,
+                 wgt,
+                 mi,
+                 diab)
+  
+  
+  # call h2o function using data frame we just created + isolation forest model
+  pred_isof <- h2o.mojo_predict_df(frame=x, 
+                                     mojo_zip_path='RFM_Anomaly_Detection/DRF_model_R_1598476777072_149.zip',
+                                     genmodel_jar_path='RFM_Anomaly_Detection/h2o-genmodel.jar',
+                                     verbose = F)
+  anom_score = as.vector(pred_isof$predict)
+  anom_score
+})
+
+# This function checks for anonomally score, if its above certain threshold, we don't run the model
 tx_model_predictions = reactive({
-  pred_data = tibble(age = input$tx_age,
-                     psa = input$tx_psa,
-                     bxgs1 = as.integer(input$tx_bxgs_1),
-                     bxgs2 = as.integer(input$tx_bxgs_2),
-                     bxgs = as.integer(input$tx_bxgs_1) + as.integer(input$tx_bxgs_2),
-                     totcores = as.integer(input$tx_totcores),
-                     poscores = as.integer(input$tx_poscores),
-                     wgt = input$tx_wgt,
-                     mi = factor(input$tx_mi,levels=c('No','Yes')),
-                     diab = factor(input$tx_diab,levels=c('No','Yes'))
-                     )
+  age_rc = as.integer(input$tx_age)
+  psa = as.integer(input$tx_psa)
+  bxgs1 = as.integer(input$tx_bxgs_2)
+  bxgs2 = as.integer(input$tx_bxgs_2)
+  bxgs = bxgs1 + bxgs2
+  totcores = as.integer(input$tx_totcores)
+  poscores = as.integer(input$tx_poscores)
+  wgt = as.integer(input$tx_wgt)
+  mi = input$tx_mi
+  diab = input$tx_diab
   
-  # predictions = predict(trained_model,newdata = pred_data)
-  # predictions$data
+  # create data frame
+  x <- data.frame(age_rc,
+             psa,
+             bxgs,
+             bxgs1,
+             bxgs2,
+             totcores,
+             poscores,
+             wgt,
+             mi,
+             diab)
   
-  # predictions = h2o.predict(tx_model,newdata = as.h2o(pred_data)) %>% as.data.frame()
-  # '[{"age":66,"psa":6,"bxgs":7,"totcores":12,"poscores":3,"wgt":198,"mi":"No","diab":"No"}]') %>%
-  predictions = 
-    h2o.predict_json('tx_model_nomets_pub.zip', pred_data %>% as.tibble() %>% jsonlite::toJSON()) %>% 
-    pull(classProbabilities) %>% unlist() %>%
-    setNames(c('Active_surveillance','Androgen_deprivation_therapy','Radiation','Radical_prostatectomy','Watchful_waiting')) %>% 
-    bind_rows()
-  predictions
+    # call h2o function
+    pred_rf <- h2o.mojo_predict_df(frame=x, 
+                                   mojo_zip_path='RFM_tx_prediction/DRF_model_R_1597414894646_541.zip',
+                                   genmodel_jar_path='RFM_tx_prediction/h2o-genmodel.jar',
+                                   verbose = F)
+    pred_rf
 })
 
 tx_graph_risk = reactive({
   tx_model_predictions() %>%
-    gather(treatment,probability,Active_surveillance:Watchful_waiting) %>% 
-    # mutate(treatment = str_replace(treatment,'prob.','')) %>% 
-    mutate(treatment = str_replace_all(treatment,'_','\n')) %>% 
-    # mutate(mid_y = cumsum(risk)-0.5*risk) %>% 
-    mutate(mid_y = 0.5*probability) %>% 
-    # ungroup %>% 
+    gather(treatment,probability,Active_surveillance:Watchful_waiting) %>%
+    mutate(treatment = str_replace_all(treatment,'_','\n')) %>%
+    mutate(mid_y = 0.5*probability) %>%
     ggplot(aes(x=reorder(treatment,probability),y=probability,fill=treatment)) +
     geom_bar(stat='identity') +
     guides(fill = guide_legend(reverse=TRUE)) +
     theme_minimal() +
-    # scale_fill_brewer(palette='Set3') +
-    # scale_fill_manual(values=rev(brewer.pal(3,'Set3'))) + 
     theme(#legend.position='bottom',
           #legend.text=element_text(size = rel(1)),
           legend.position='none',
@@ -239,11 +305,20 @@ tx_graph_risk = reactive({
     labs(fill='',x='',y='')
 })
 
-  output$tx_graph_risk = renderPlot(tx_graph_risk())
-  
-  
-  
-# HERE IS MY CODE
+observe({
+  score = as()
+  print(score)
+  if (score > 0.66) {
+    output$as_msg <- renderText({
+      paste("Sorry, but we do not have enough patients with similar statistics to build a model")
+    })
+    output$tx_graph_risk = renderPlot(0)
+  } else {
+    output$as_msg <- renderText({})
+    output$tx_graph_risk = renderPlot(tx_graph_risk())
+  }
+})
+
 gg = ''
 ggfind = reactive({
   b1 = as.integer(input$tx_bxgs_1)
@@ -390,10 +465,6 @@ output$rec <- renderUI({
     'Favorable Risk'=HTML(t_fav_risk),
     'Low Risk'=HTML(t_low_risk)
   )
-  
-  #paste('num of cores with cancer: ', input$tx_poscores)
-  
 })
-
 
 ```
