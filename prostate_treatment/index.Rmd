@@ -4,7 +4,8 @@ output: html_document
 runtime: shiny_prerendered
 ---
 
-# ![](images/askmusic_logo.jpg){width=10%} Prostate Cancer Treatment Options
+# <img src='images/askmusic_logo.jpg' style='width: 10%'></img> Prostate Cancer Treatment Options
+
 #### This app is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.
 
 
