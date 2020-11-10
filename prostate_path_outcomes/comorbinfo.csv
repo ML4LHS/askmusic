@@ -1,0 +1,15 @@
+Comorbidity,Name,Risk Score,Description
+History of MI,History of Myocardial Infarction,1,History of myocardial infarction
+Peptic ulcer,Peptic ulcer,1,"Includes gastric, duodenal, and gastrojejunal ulcers and chronic forms of peptic ulcer disease"
+Rheumatologic disease,Rheumatologic disease,2,"Includes systemic lupus erythematosus, systemic sclerosis, polymyositis, adult rheumatoid arthritis, rheumatoid lung, and polymyalgic rheumatica"
+Acute MI,Acute Myocardial Infarction,2,Acute myocardial infarction
+Peripheral vascular disease,Peripheral vascular disease,3,"Includes intermittent claudication, aortic aneurysm, gangrene, prosthetic blood vessels, and resection and replacement of lower limb arteries"
+Diabetes,Diabetes,3,Includes diabetes with or without acute metabolic disturbances and diabetes with peripheral circulatory disorders
+Paralysis,Paralysis,3,Paralysis (hemiplegia or paraplegia)
+Cerebrovascular disease,Cerebrovascular disease,3,Cerebrovascular disease 
+AIDS,AIDS,5,"Includes AIDS, AIDS-like syndrome, AIDS-related complex, and symptomatic HIV infection"
+Dementia,Dementia,5,Includes senile and presenile dementia
+Chronic renal failure,Chronic renal failure,5,"Includes chronic glomerulonephritis; nephritis and nephropathy; chronic renal failure; renal failure, unspecified; and disorders resulting from impaired renal function"
+Moderate/severe liver disease,Moderate/severe liver disease,5,Moderate/severe liver disease 
+CHF,Chronic Obstructive Pulmonary Disease,5,Congestive Heart Failure
+COPD,Congestive Heart Failure,5,"Chronic Obstructive Pulmonary Disease: includes COPD, pneumoconiosis, and chronic respiratory conditions due to fumes and vapors"
