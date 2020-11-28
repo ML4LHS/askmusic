@@ -23,7 +23,7 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
  font-family: Roboto, sans-serif !important;
 }
 </style>
-
+=
 ```{r context='setup',include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(tibble)
@@ -244,7 +244,7 @@ as <- reactive({
   
   # call h2o function using data frame we just created + isolation forest model
   pred_isof <- h2o.mojo_predict_df(frame=x, 
-                                     mojo_zip_path='RFM_Anomaly_Detection/DRF_model_R_1598476777072_149.zip',
+                                mojo_zip_path='RFM_Anomaly_Detection/DRF_model_R_1598476777072_149.zip',
                                      genmodel_jar_path='RFM_Anomaly_Detection/h2o-genmodel.jar',
                                      verbose = F)
   anom_score = as.vector(pred_isof$predict)
@@ -286,9 +286,13 @@ tx_model_predictions = reactive({
 
 tx_graph_risk = reactive({
   tx_model_predictions() %>%
-    gather(treatment,probability,Active_surveillance:Watchful_waiting) %>%
+    # Jake's edits (combining Radical prostate + radiation)
+    mutate(Definitive_treatment=Radical_prostatectomy+Radiation) %>%
+    subset(select = -c(Radical_prostatectomy, Radiation)) %>% 
+    # ---
+    gather(treatment,probability,Active_surveillance:Definitive_treatment) %>%
     mutate(treatment = str_replace_all(treatment,'_','\n')) %>%
-    mutate(mid_y = 0.5*probability) %>%
+    mutate(mid_y = 0.5*probability) %>% 
     ggplot(aes(x=reorder(treatment,probability),y=probability,fill=treatment)) +
     geom_bar(stat='identity') +
     guides(fill = guide_legend(reverse=TRUE)) +
