@@ -1,0 +1,19 @@
+.navbar-inverse {
+    background-color: #333;
+    border-color: #9d9d9d;
+}
+
+.navbar-inverse .navbar-brand {
+
+    color: #2780e3;
+}
+.navbar-brand {
+  height: auto%;
+  /*width: 20%;*/
+  margin-left: 120px;
+}
+
+.navbar-logo img {
+  margin-left: 10px;
+  height: 48px;
+}

@@ -1,0 +1,404 @@
+---
+title: ''
+author: ''
+date: ''
+output: html_document
+runtime: shiny_prerendered
+---
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
+
+<script>
+Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
+  $('html, body').animate({
+      scrollTop: $("#"+targetid).offset().top - 75
+  }, 1000);
+});
+</script>
+
+```{r include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(shiny)
+# library(readr)
+library(magrittr)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+# library(foreach)
+# library(tableone)
+library(RColorBrewer)
+# library(shinydashboard) # Karandeep 11/13/2017
+# library(flexdashboard)
+# library(plotly)
+
+
+sigmoid = function(x){
+  return (1/(1+exp(-x)))
+}
+```
+
+
+```{r surgout input}
+
+clinical_stage_options = c('T1A','T1B','T1C', 'T2A', 'T2B', 'T2C', 'T3')
+lowerbound = 5
+upperbound = 30
+
+h1('Radical Prostatectomy Pathologic Outcomes App')
+h4('This tool helps urologists communicate to patients the risk of different pathologic findings at the time of radical prostatectomy. The tool is meant to be used as part fo pre-operative counseling.')
+```
+
+
+```{r}
+
+wellPanel(style = "background: #FFF;",
+          flowLayout(
+            # numericInput('age','Age',min=20,max=100,step=1,value = 64),
+            numericInput('surgoutpsa','PSA (ng/mL)',value = 5),
+            numericInput('surgpgleason', 'Primary Gleason Score', min=1, max=5, step=1, value=4),
+            numericInput('surgsgleason', 'Secondary Gleason Score', min=1, max=5, step=1, value=3),
+            selectInput('surgboolgleason', 'Gleason Core Data?*', choices=c('Yes', 'No'), selected = 'No'),
+            numericInput('surgposcores', 'Positive Cores', min=1, max=20, step=1, value=4),
+            numericInput('surgnegcores', 'Negative Cores', min=1, max=20, step=1, value=8),
+            selectInput('surgcstage','Clinical Stage',choices=clinical_stage_options,selected = 'T2B')
+            
+          ),
+         
+          br(),
+          p("* If you do not have Gleason core data, the inputs for number of positive and negative cores will be ignored."),
+          br(),
+          actionButton('surgoutstart','Calculate')
+)
+
+
+
+
+```
+
+```{r surgout output}
+
+conditionalPanel('input.surgoutstart>0 && input.surgoutpsa <= 0.05',
+                 wellPanel(
+                   h3('Prostate specific antigen (PSA) must be greater than 0.05 ng/mL.')
+                 ))
+
+
+conditionalPanel('input.surgoutstart>0 && input.surgoutpsa > 0.05',
+        wellPanel(id = "surgout_results", style = "background: #FFF;",
+        h1('What is the probability of the following findings at the time of radical prostatectomy based on the MUSIC registry?'),
+                  verticalLayout(
+                  # h3("Memorial Sloan Kettering Cancer Center:"),
+                  #   splitLayout(h5("Not Organ Confined"), h5("Extracapsular Extension"), h5("Seminal Vesicle Invasion"), h5("Lymph Node Invasion")),
+                  #   splitLayout(
+                  #     # renderGauge(calculate_MSK_organ_prob()),
+                  #     gaugeOutput(outputId = "calculate_MSK_organ_prob"),
+                  #     gaugeOutput("calculate_MSK_EE_prob"),
+                  #     gaugeOutput("calculate_MSK_SVI_prob"),
+                  #     gaugeOutput("calculate_MSK_LNI_prob")
+                  #     
+                  #     ),#end split layout
+                    splitLayout(h5("Not Organ Confined"), h5("Extracapsular Extension"), h5("Seminal Vesicle Invasion"), h5("Lymph Node Invasion")),
+                    splitLayout(        
+                      flexdashboard::gaugeOutput("calculate_MUSIC_organ_prob"),
+                      flexdashboard::gaugeOutput("calculate_MUSIC_EE_prob"),
+                      flexdashboard::gaugeOutput("calculate_MUSIC_SVI_prob"),
+                      flexdashboard::gaugeOutput("calculate_MUSIC_LNI_prob")
+                    )
+                  )
+                 ), #end well panel    
+                        actionButton('mskout','View MSK Model')
+) #end conditional panel
+
+conditionalPanel('input.surgoutstart>0 && input.surgoutpsa > 0.05 && input.mskout % 2 == 1',
+                 wellPanel(id="msk_results",style = "background: #FFF;",
+                 verticalLayout(
+                                     h3("Memorial Sloan Kettering Cancer Center Model"),
+                                     p('Our implementation of this model was last updated on November 5, 2017. There is a possibility the underlying model may have changed since that date.'),
+                    splitLayout(h5("Not Organ Confined"), h5("Extracapsular Extension"), h5("Seminal Vesicle Invasion"), h5("Lymph Node Invasion")),
+                    splitLayout(
+                      # renderGauge(calculate_MSK_organ_prob()),
+                      flexdashboard::gaugeOutput(outputId = "calculate_MSK_organ_prob"),
+                      flexdashboard::gaugeOutput("calculate_MSK_EE_prob"),
+                      flexdashboard::gaugeOutput("calculate_MSK_SVI_prob"),
+                      flexdashboard::gaugeOutput("calculate_MSK_LNI_prob")
+
+                      ),
+                    p("View the full implementation of the MSK Model at", a("https://www.mskcc.org/nomograms/prostate/pre_op", target="_blank"))
+                   )
+                 )
+)
+                   
+####
+```
+
+```{r surgout processing results, context="server"}
+
+sigmoid = function(x){
+  return (1/(1+exp(-x)))
+}
+
+# create risk_calc variables
+
+
+
+msk_calc_results = function(){
+  PSA = input$surgoutpsa
+  PRIMARY_GLEASON = input$surgpgleason > 3
+  SECONDARY_GLEASON = input$surgsgleason > 3
+  CLIN_2A = 0
+  CLIN_2B = 0
+  CLIN_2C = 0
+  CLIN_3 = 0
+  if(input$surgcstage ==  'T2A'){
+    CLIN_2A = 1
+  }
+  if(input$surgcstage == 'T2B'){
+    CLIN_2B = 1
+  }
+  if(input$surgcstage =='T2C'){
+    CLIN_2C = 1
+  }
+  if(input$surgcstage == 'T3'){
+    CLIN_3 = 1
+  }
+  NEGATIVE_CORES = input$surgnegcores
+  POSITIVE_CORES = input$surgposcores
+  
+  nc_items = c(PSA, PRIMARY_GLEASON, SECONDARY_GLEASON, CLIN_2A, CLIN_2B, CLIN_2C, CLIN_3)
+  c_items = c(PSA, PRIMARY_GLEASON, SECONDARY_GLEASON, CLIN_2A, CLIN_2B, CLIN_2C, CLIN_3, NEGATIVE_CORES, POSITIVE_CORES)
+  
+    prob_nc_organ_confined = sigmoid(0.72159898 + sum(c(-0.05572401, -0.8339879,	-0.54290901
+,	-0.31781681,	-0.66088364, -0.62862475,	-1.2687455) * nc_items))
+  prob_nc_extension = sigmoid(-0.69762059 + sum(c(0.0489202, 0.73584198, 0.51859291, 0.30909082, 0.6029168, 0.56517529
+,1.21028544) * nc_items))
+  prob_nc_svi = sigmoid(-4.47585322 + sum(c(0.05520405,	1.60366838, 0.85036906,	0.51591678, 0.7556456,	1.10535272,	1.35042904) * nc_items))
+  prob_nc_lni = sigmoid(-4.78603008 + sum(c(0.04647603,	2.01834524, 0.91667795,	0.54169879,	0.97420613, 1.09028922,	1.59202656) * nc_items))
+
+  prob_c_organ_confined = sigmoid(0.48559304 + sum(c(-0.06135733, -0.75917868, -0.42046589,	-0.11674405, -0.3569897,	-0.37818337,	-0.98212899,	0.06281136,	-0.0917364) * c_items))
+  prob_c_extension = sigmoid(-0.47046815 + sum(c(0.0532227,	0.6593498,0.40266113,0.13022831,	0.29508755, 0.28976819,		0.8531101, -0.06051063, 0.08833464) * c_items))
+  prob_c_svi = sigmoid(-3.64087032 + sum(c(0.04444051,	1.61342422,		0.79980864,		0.24802096,	0.32708694,	0.61429198,	0.57498157,	-0.13962727, 0.07543931) * c_items))
+  prob_c_lni = sigmoid(-3.90664548 + sum(c(0.04648719, 1.85080788, 0.77070173,0.37888753, 0.57940132, 0.57618944,		0.9105159, -0.11228264, 0.05721468) * c_items))
+  
+  pred_prob = c(prob_nc_organ_confined, prob_nc_extension, prob_nc_svi, prob_nc_lni)
+  if (input$surgboolgleason == 'Yes'){
+    pred_prob = c(prob_c_organ_confined, prob_c_extension, prob_c_svi, prob_c_lni)
+  }
+  return (pred_prob)
+}
+music_socalc_results = function(){
+   
+  PSA = input$surgoutpsa
+  PRIMARY_GLEASON = input$surgpgleason > 3
+  SECONDARY_GLEASON = input$surgsgleason > 3
+  CLIN_2A = 0
+  CLIN_2B = 0
+  CLIN_2C = 0
+  CLIN_3 = 0
+  if(input$surgcstage ==  'T2A'){
+    CLIN_2A = 1
+  }
+  if(input$surgcstage == 'T2B'){
+    CLIN_2B = 1
+  }
+  if(input$surgcstage =='T2C'){
+    CLIN_2C = 1
+  }
+  if(input$surgcstage == 'T3'){
+    CLIN_3 = 1
+  }
+  NEGATIVE_CORES = input$surgnegcores
+  POSITIVE_CORES = input$surgposcores
+
+  nc_items = c(PSA, PRIMARY_GLEASON, SECONDARY_GLEASON, CLIN_2A, CLIN_2B, CLIN_2C, CLIN_3)
+  c_items = c(PSA, PRIMARY_GLEASON, SECONDARY_GLEASON, CLIN_2A, CLIN_2B, CLIN_2C, CLIN_3, NEGATIVE_CORES, POSITIVE_CORES)
+
+  prob_nc_organ_confined = sigmoid(-2.516492697 + sum(c(0.085432293,1.263865572,	0.732393158,	0.371614937,	0.693798006	,0.200045316,	2.218216727) * nc_items))
+  prob_nc_extension = sigmoid(-2.542537076 + sum(c(0.081790652,	1.302741252,	0.726648312,	0.396240986,	0.570214571,	0.061306608,	1.816975524) * nc_items))
+  prob_nc_svi = sigmoid(-4.070715025 + sum(c(0.059265825,	1.568525694,	0.564706468,	0.310083952,	0.724101555,	0.59360294,	1.895766245) * nc_items))
+  prob_nc_lni = sigmoid(-4.75778 + sum(c(0.041174, 1.355189,	0.682374,	-0.06966,	0.807689,0.606907,	0.611827) * nc_items))
+
+  prob_c_organ_confined = sigmoid(-2.176626006 + sum(c(0.077075239,	1.123729173,	0.501630314,	0.275101942,	0.261459706,	-0.076708256,	1.813819246,	-0.082331461,	0.109765711) * c_items))
+  prob_c_extension = sigmoid(-2.025547956 + sum(c(0.059619211,	1.105701719,	0.610644555,	0.356640216,	0.284897821,	-0.287289044,	1.617313719,	-0.08972156,	0.098696633) * c_items))
+  prob_c_svi = sigmoid(-3.349305439 + sum(c(0.056001942,	1.258995516,	0.479848189,	0.212618388,	0.234156123,	0.150251497,	0.997939281,	-0.145587996,	0.092094737) * c_items))
+  prob_c_lni = sigmoid(-4.053225457 + sum(c(0.03784488, 1.535051288, 0.520589561 ,-0.112119399 ,0.380871255 ,0.143702975,	0.450608531, -0.170068203 ,0.053897523) * c_items))
+
+  pred_prob = c(prob_nc_organ_confined, prob_nc_extension, prob_nc_svi, prob_nc_lni)
+  if (input$surgboolgleason == 'Yes'){
+    pred_prob = c(prob_c_organ_confined, prob_c_extension, prob_c_svi, prob_c_lni)
+  }
+  return (pred_prob)
+}
+
+# calculate_MSK_organ_prob = reactive({
+#   
+#   value = msk_calc_results()
+#   value = round((1 - value[1]) * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 30), warning = c(31, 60), danger = c(61, 100)
+#   ))
+# })
+# 
+# live_gauge = renderGauge({
+#   value = msk_calc_results()
+#   round((1 - value[1]) * 100)
+# })
+#   
+# calculate_MSK_EE_prob = reactive({
+#   
+#   value = msk_calc_results()
+#   value = round(value[2] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 5), warning = c(6, 19), danger = c(20, 100)
+#   ))
+#   
+# })
+# 
+# calculate_MSK_SVI_prob = reactive({
+#   
+#   value = msk_calc_results()
+#   value = round(value[3] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 5), warning = c(6, 19), danger = c(20, 100)
+#   ))
+#   
+# })
+# 
+# calculate_MSK_LNI_prob = reactive({
+#   
+#   value = msk_calc_results()
+#   value = round(value[4] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 5), warning = c(6, 19), danger = c(20, 100)
+#   ))
+# })
+# 
+# 
+# calculate_MUSIC_organ_prob = reactive({
+#   
+#   value = music_socalc_results()
+#   value = round(value[1] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 30), warning = c(31, 60), danger = c(61, 100)
+#   ))
+# })
+# 
+# calculate_MUSIC_EE_prob = reactive({
+#   
+#   value = music_socalc_results()
+#   value = round(value[2] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 5), warning = c(6, 19), danger = c(20, 100)
+#   ))
+#   
+# })
+# 
+# calculate_MUSIC_SVI_prob = reactive({
+#   
+#   value = music_socalc_results()
+#   value = round(value[3] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 5), warning = c(6, 19), danger = c(20, 100)
+#   ))
+#   
+# })
+# 
+# calculate_MUSIC_LNI_prob = reactive({
+#   
+#   value = music_socalc_results()
+#   value = round(value[4] * 100)
+#   gauge(value, min = 0, max = 100, symbol = '%', gaugeSectors(
+#     success = c(0, 5), warning = c(6, 19), danger = c(20, 100)
+#   ))
+# })
+
+
+```
+
+```{r surgout gaugeoutputs, context="server"}
+observeEvent(input$surgoutstart, {
+    session$sendCustomMessage('scrolltoresults', 'surgout_results')
+  })
+
+observeEvent(input$mskout, {
+    session$sendCustomMessage('scrolltoresults', 'msk_results')
+  })
+
+
+output$calculate_MSK_organ_prob = flexdashboard::renderGauge({
+  
+  value = msk_calc_results()
+  value = round((1 - value[1]) * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#a9a9a9'
+  ))
+})
+
+output$calculate_MSK_EE_prob = flexdashboard::renderGauge({
+  
+  value = msk_calc_results()
+  value = round(value[2] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#a9a9a9'
+  ))
+  
+})
+
+output$calculate_MSK_SVI_prob = flexdashboard::renderGauge({
+  
+  value = msk_calc_results()
+  value = round(value[3] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#a9a9a9'
+  ))
+  
+})
+
+output$calculate_MSK_LNI_prob = flexdashboard::renderGauge({
+  
+  value = msk_calc_results()
+  value = round(value[4] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#a9a9a9'
+  ))
+})
+
+
+output$calculate_MUSIC_organ_prob = flexdashboard::renderGauge({
+  
+  value = music_socalc_results()
+  value = round(value[1] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#4c9e90'
+  ))
+})
+
+output$calculate_MUSIC_EE_prob = flexdashboard::renderGauge({
+  
+  value = music_socalc_results()
+  value = round(value[2] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#4c9e90'
+  ))
+  
+})
+
+output$calculate_MUSIC_SVI_prob = flexdashboard::renderGauge({
+  
+  value = music_socalc_results()
+  value = round(value[3] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#4c9e90'
+  ))
+  
+})
+
+output$calculate_MUSIC_LNI_prob = flexdashboard::renderGauge({
+  
+  value = music_socalc_results()
+  value = round(value[4] * 100)
+  flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
+    colors = '#4c9e90'
+  ))
+})
+```

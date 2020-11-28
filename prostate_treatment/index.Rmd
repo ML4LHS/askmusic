@@ -4,7 +4,8 @@ output: html_document
 runtime: shiny_prerendered
 ---
 
-# ![](images/askmusic_logo.jpg){width=10%} Prostate Cancer Treatment Options
+# <img src='images/askmusic_logo.jpg' style='width: 10%'></img> Prostate Cancer Treatment Options
+
 #### This app is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.
 
 
@@ -109,14 +110,14 @@ wellPanel(style = "background: #FFF;",
                       step=1,
                       value=12,
                       dragRange=FALSE)),
-          h4('The following information are optional, but filling them IN FULL will help us give you better recommendations for the appropriate treatment'),
-          selectInput('tx_t', 'Enter your T of TNM', 
+          h4('The following questions are optional, but completing all of them will help us give you recommendations for appropriate treatments recommended by national guidelines.'),
+          selectInput('tx_t', 'What is the clinical T-stage for your prostate cancer? (T-stage helps describe whether the cancer involves areas surrounding the prostate)', 
                       choices=c('Do not know', 'T1', 'T2a', 'T2b', 'T2c', 'T3a', 'T3b', 'T4'), 
                       selected='Do not know'),
-          selectInput('tx_n', 'Enter your N of TNM', 
+          selectInput('tx_n', 'What is the clinical N-stage for your prostate cancer? (N-stage describes whether the cancer involves the lymph nodes)', 
                       choices=c('Do not know', 'N0', 'N1'), 
                       selected='Do not know'),
-          selectInput('tx_corestats', 'Do you have any cores with more than 50% cancer?', 
+          selectInput('tx_corestats', 'Did your prostate biopsy have any cores with more than 50% cancer?', 
                       choices=c('Do not know', 'Yes', 'No'), 
                       selected='Do not know'),
           br(),
@@ -129,13 +130,13 @@ wellPanel(style = "background: #FFF;",
 
 conditionalPanel('input.tx_start>0 && (input.tx_t == "Do not know" || input.tx_n == "Do not know" || input.tx_corestats == "Do not know")',
                  wellPanel(
-                   h3("You need to fill out all the optional information for us to give you a recommended treatment")
+                   h3("All of the optional questions must be answered for us to share the treatment options recommended by the National Comprehensive Cancer Network.")
                  ))
 
 conditionalPanel('input.tx_start>0 && (input.tx_t != "Do not know" && input.tx_n != "Do not know" && input.tx_corestats != "Do not know")',
                  wellPanel(
                    h1(textOutput('risk_label')),
-                   h5("Our Recommendations: "),
+                   h5("According to the National Comprehensive Cancer Network, appropriate treatment options include: "),
                    h5(htmlOutput('rec')),
                    h5(htmlOutput('ascore'))
                  ))
@@ -173,7 +174,7 @@ conditionalPanel('input.tx_start>0 && (input.tx_age < 45 || input.tx_age > 85)',
 conditionalPanel('input.tx_start>0 && input.tx_psa > 0.05 && input.tx_age >=45 && input.tx_age <= 85 && input.tx_clinmstg=="No" && input.tx_wgt>=100 && input.tx_wgt<=350 && !(input.tx_poscores>input.tx_totcores)',
                  wellPanel(id='tx_results',style = "background: #FFF;",
                    h3('What treatment did similar patients choose in the MUSIC registry?'),
-                   h5(htmlOutput('as_msg')),
+                   h5(htmlOutput('anomaly_msg')),
                    plotOutput('tx_graph_risk')
                    ))
                 
@@ -216,11 +217,11 @@ conditionalPanel('input.tx_start>0 && input.tx_psa > 0.05 && input.tx_age >=45 &
 
 ###BASED ON LYNA'S PSEUDO-CODE:
 #
-# This function returns user's anomally score (hence as)
-as <- reactive({
+# This function returns user's anomaly score (hence as)
+anomaly_score <- reactive({
   age_rc = as.integer(input$tx_age)
   psa = as.integer(input$tx_psa)
-  bxgs1 = as.integer(input$tx_bxgs_2)
+  bxgs1 = as.integer(input$tx_bxgs_1)
   bxgs2 = as.integer(input$tx_bxgs_2)
   bxgs = bxgs1 + bxgs2
   totcores = as.integer(input$tx_totcores)
@@ -255,7 +256,7 @@ as <- reactive({
 tx_model_predictions = reactive({
   age_rc = as.integer(input$tx_age)
   psa = as.integer(input$tx_psa)
-  bxgs1 = as.integer(input$tx_bxgs_2)
+  bxgs1 = as.integer(input$tx_bxgs_1)
   bxgs2 = as.integer(input$tx_bxgs_2)
   bxgs = bxgs1 + bxgs2
   totcores = as.integer(input$tx_totcores)
@@ -310,15 +311,15 @@ tx_graph_risk = reactive({
 })
 
 observe({
-  score = as()
+  score = anomaly_score()
   print(score)
   if (score > 0.66) {
-    output$as_msg <- renderText({
-      paste("Sorry, but we do not have enough patients with similar statistics to build a model")
+    output$anomaly_msg <- renderText({
+      paste("Based on the information you entered, we do not have a sufficient number of patients with similar characteristics to be able to share accurate information. Please talk to your urologist about your treatment options.")
     })
     output$tx_graph_risk = renderPlot(0)
   } else {
-    output$as_msg <- renderText({})
+    output$anomaly_msg <- renderText({})
     output$tx_graph_risk = renderPlot(tx_graph_risk())
   }
 })
@@ -457,7 +458,7 @@ t_high_risk ='If your life expectancy is >5 years: EBRT with 18 months - 3 years
 t_very_high_risk = 'If your life expectancy is <5 years: Watchful Waiting, ADT, EBRT <br> If your life expectancy is >5 years: EBRT + ADT, EBRT + brachytherapy + ADT, radical prostatectomy'
 
 output$risk_label <- renderText({
-  paste("You are at: ", risk_group())
+  paste("According to the National Comprehensive Cancer Center, your cancer is categorized as: ", risk_group())
 })
 
 output$rec <- renderUI({
