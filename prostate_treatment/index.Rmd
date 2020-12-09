@@ -33,7 +33,7 @@ library(tidyr)
 library(ggplot2)
 library(stringr)
 library(shiny)
-library(jsonlite)
+#library(jsonlite)
 library(RColorBrewer)
 library(h2o)
 
@@ -65,6 +65,10 @@ round_to_largest_remainder = function (x) {
       )) %>% 
       arrange(row_num)
   }
+    
+  # check if any value are between 0-1
+  # if so, we return '<1'
+  lr_data = lr_data %>% mutate(integer_vals=ifelse(decimal_rank>0 & integer_vals<1, "<1", integer_vals))
   
   lr_data$integer_vals
 }
