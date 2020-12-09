@@ -311,23 +311,14 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
 <script type="application/json" data-for="tx_n" data-nonempty="">{}</script>
 </div>
 </div>
-<div class="form-group shiny-input-container">
-<label class="control-label" for="tx_corestats">Did your prostate biopsy have any cores with more than 50% cancer?</label>
-<div>
-<select id="tx_corestats"><option value="Do not know" selected>Do not know</option>
-<option value="Yes">Yes</option>
-<option value="No">No</option></select>
-<script type="application/json" data-for="tx_corestats" data-nonempty="">{}</script>
-</div>
-</div>
 <br/>
 <button id="tx_start" type="button" class="btn btn-default action-button">Calculate</button>
 </div>
-<p><div data-display-if="input.tx_start&gt;0 &amp;&amp; (input.tx_t == &quot;Do not know&quot; || input.tx_n == &quot;Do not know&quot; || input.tx_corestats == &quot;Do not know&quot;)" data-ns-prefix="">
+<p><div data-display-if="input.tx_start&gt;0 &amp;&amp; (input.tx_t == &quot;Do not know&quot; || input.tx_n == &quot;Do not know&quot;)" data-ns-prefix="">
 <div class="well">
 <h3>All of the optional questions must be answered for us to share the treatment options recommended by the National Comprehensive Cancer Network.</h3>
 </div>
-</div><div data-display-if="input.tx_start&gt;0 &amp;&amp; (input.tx_t != &quot;Do not know&quot; &amp;&amp; input.tx_n != &quot;Do not know&quot; &amp;&amp; input.tx_corestats != &quot;Do not know&quot;)" data-ns-prefix="">
+</div><div data-display-if="input.tx_start&gt;0 &amp;&amp; (input.tx_t != &quot;Do not know&quot; &amp;&amp; input.tx_n != &quot;Do not know&quot;)" data-ns-prefix="">
 <div class="well">
 <h1>
 <div id="risk_label" class="shiny-text-output"></div>
@@ -414,7 +405,6 @@ round_to_largest_remainder = function (x) {
   # check if any value are between 0-1
   # if so, we return '<1'
   lr_data = lr_data %>% mutate(integer_vals=ifelse(decimal_rank>0 & integer_vals<1, "<1", integer_vals))
-  
   lr_data$integer_vals
 }
 </script>
@@ -592,42 +582,58 @@ low_risk = reactive({
 
 # FAVORABLE RISK
 favorable_risk = reactive({
-  gg_val = ggfind()
-  if (gg_val == 'GG1' & !low_risk()) {
-    return(TRUE)
-  }
   
-  if (gg_val == 'GG2') {
-    if ((input$tx_poscores <= 3) & input$tx_corestats == 'No') {
-      return(TRUE)
-    }
-  }
-  return(FALSE)
-})
+  # more_than_50_cores = (input$tx_poscores / input$tx_totcores) > 0.50
+  # 
+  # gg_val = ggfind()
+  # if (gg_val == 'GG1' & !low_risk()) {
+  #   return(TRUE)
+  # }
+  # 
+  # if (gg_val == 'GG2') {
+  #   if ((input$tx_poscores <= 3) & more_than_50_cores == FALSE) {
+  #     return(TRUE)
+  #   }
+  # }
+  # return(FALSE)
+    
+  more_than_50_cores = (input$tx_poscores / input$tx_totcores) >= 0.50
 
-# UNFAVORABLE INTERMEDIATE RISK
-unfavorable_int_risk = reactive({
   gg_val = ggfind()
   psa = input$tx_psa
   counter = 0
   
-  if(input$tx_t == 'T2b' | input$tx_t == 'T2c') {
-    counter = counter + 1
+  if (gg_val == 'GG1' & !low_risk()) {
+     return(TRUE)
   }
   
-  if (gg_val == 'GG2' | gg_val == 'GG3') {
-    counter = counter + 1
-  }
+  if (input$tx_t == 'T2b' | input$tx_t == 'T2c') { counter = counter + 1 }
+  if (gg_val == 'GG2' | gg_val == 'GG3') { counter = counter + 1 }
+  if (psa >= 10 & psa <= 20) { counter = counter + 1 }
+  if (gg_val == 'GG3' & more_than_50_cores == TRUE) { counter = counter + 1 }
   
-  if (psa >= 10 & psa <= 20) {
-    counter = counter + 1
+  if (counter <= 1 & more_than_50_cores == FALSE) {
+    return(TRUE)
+  } else {
+    return(FALSE)
   }
+})
+
+# UNFAVORABLE INTERMEDIATE RISK
+unfavorable_int_risk = reactive({
   
-  if (gg_val == 'GG3' & input$tx_corestats == 'Yes') {
-    counter = counter + 1
-  }
+  more_than_50_cores = (input$tx_poscores / input$tx_totcores) >= 0.50
+
+  gg_val = ggfind()
+  psa = input$tx_psa
+  counter = 0
   
-  if (counter >= 2) {
+  if (input$tx_t == 'T2b' | input$tx_t == 'T2c') { counter = counter + 1 }
+  if (gg_val == 'GG2' | gg_val == 'GG3') { counter = counter + 1 }
+  if (psa >= 10 & psa <= 20) { counter = counter + 1 }
+  if (gg_val == 'GG3' & more_than_50_cores == TRUE) { counter = counter + 1 }
+  
+  if (counter >= 2 | more_than_50_cores == TRUE) {
     return(TRUE)
   } else {
     return(FALSE)
