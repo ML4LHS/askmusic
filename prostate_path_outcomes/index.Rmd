@@ -29,7 +29,8 @@ library(ggplot2)
 # library(tableone)
 library(RColorBrewer)
 # library(shinydashboard) # Karandeep 11/13/2017
-# library(flexdashboard)
+library(flexdashboard)
+library(h2o)
 # library(plotly)
 
 
@@ -54,7 +55,7 @@ h4('This tool helps urologists communicate to patients the risk of different pat
 
 wellPanel(style = "background: #FFF;",
           flowLayout(
-            # numericInput('age','Age',min=20,max=100,step=1,value = 64),
+            numericInput('surgoutage','Age',min=20,max=100,step=1,value = 64),
             numericInput('surgoutpsa','PSA (ng/mL)',value = 5),
             numericInput('surgpgleason', 'Primary Gleason Score', min=1, max=5, step=1, value=4),
             numericInput('surgsgleason', 'Secondary Gleason Score', min=1, max=5, step=1, value=3),
@@ -230,6 +231,21 @@ music_socalc_results = function(){
   return (pred_prob)
 }
 
+gg_val <- reactive({
+  g1=as.numeric(input$surgpgleason)
+  g2=as.numeric(input$surgsgleason)
+  
+  if (g1 < 4 | g2 < 4) {
+    return(paste0(g1, "+", g2))
+  } else if (g1 == 4 & g2 == 4) {
+    return("8")
+  } else {
+    return("9-10")
+  }
+  
+  stop("OK something's wrong with gg")
+})
+
 # calculate_MSK_organ_prob = reactive({
 #   
 #   value = msk_calc_results()
@@ -316,6 +332,7 @@ music_socalc_results = function(){
 ```
 
 ```{r surgout gaugeoutputs, context="server"}
+
 observeEvent(input$surgoutstart, {
     session$sendCustomMessage('scrolltoresults', 'surgout_results')
   })
@@ -365,18 +382,52 @@ output$calculate_MSK_LNI_prob = flexdashboard::renderGauge({
 
 
 output$calculate_MUSIC_organ_prob = flexdashboard::renderGauge({
+  # value = music_socalc_results()
+  # value = round(value[1] * 100)
+  # print("ORGAN")
+  # print(paste("hand-coded value: ", value))
   
-  value = music_socalc_results()
-  value = round(value[1] * 100)
+  x <- data.frame(clinical_tstage=input$surgcstage,
+                  grade_group=gg_val(),
+                  age=input$surgoutage,
+                  psa=input$surgoutpsa,
+                  poscores=input$surgposcores,
+                  negcores=input$surgnegcores)
+  
+  pred_rf <- h2o.mojo_predict_df(frame=x, 
+                                 mojo_zip_path='mojo/h2o_nocd_glm.zip',
+                                 genmodel_jar_path='mojo/h2o-genmodel.jar',
+                                 verbose = F)
+  value = pred_rf$X1
+  value = round(value * 100)
+  # print(paste("mojo value: ", value))
+
   flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
     colors = '#4c9e90'
   ))
 })
 
 output$calculate_MUSIC_EE_prob = flexdashboard::renderGauge({
+  # value = music_socalc_results()
+  # value = round(value[2] * 100)
+  # print("EE")
+  # print(paste("hand-coded value: ", value))
   
-  value = music_socalc_results()
-  value = round(value[2] * 100)
+  x <- data.frame(clinical_tstage=input$surgcstage,
+                  grade_group=gg_val(),
+                  age=input$surgoutage,
+                  psa=input$surgoutpsa,
+                  poscores=input$surgposcores,
+                  negcores=input$surgnegcores)
+
+  pred_rf <- h2o.mojo_predict_df(frame=x, 
+                                 mojo_zip_path='mojo/h2o_epe_glm.zip',
+                                 genmodel_jar_path='mojo/h2o-genmodel.jar',
+                                 verbose = F)
+  value = pred_rf$X1
+  value = round(value * 100)
+  # print(paste("mojo value: ", value))
+  
   flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
     colors = '#4c9e90'
   ))
@@ -384,9 +435,27 @@ output$calculate_MUSIC_EE_prob = flexdashboard::renderGauge({
 })
 
 output$calculate_MUSIC_SVI_prob = flexdashboard::renderGauge({
+  # value = music_socalc_results()
+  # value = round(value[3] * 100)
+  # print("SVI")
+  # print(paste("hand-coded value: ", value))
   
-  value = music_socalc_results()
-  value = round(value[3] * 100)
+  x <- data.frame(clinical_tstage=input$surgcstage,
+                  grade_group=gg_val(),
+                  age=input$surgoutage,
+                  psa=input$surgoutpsa,
+                  poscores=input$surgposcores,
+                  negcores=input$surgnegcores)
+  
+  pred_rf <- h2o.mojo_predict_df(frame=x, 
+                                 mojo_zip_path='mojo/h2o_svi_glm.zip',
+                                 genmodel_jar_path='mojo/h2o-genmodel.jar',
+                                 verbose = F)
+  
+  value = pred_rf$X1
+  value = round(value * 100)
+  # print(paste("mojo value: ", value))
+  
   flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
     colors = '#4c9e90'
   ))
@@ -394,9 +463,26 @@ output$calculate_MUSIC_SVI_prob = flexdashboard::renderGauge({
 })
 
 output$calculate_MUSIC_LNI_prob = flexdashboard::renderGauge({
+  # value = music_socalc_results()
+  # value = round(value[4] * 100)
+  # print("LNI")
+  # print(paste("hand-coded value: ", value))
   
-  value = music_socalc_results()
-  value = round(value[4] * 100)
+  x <- data.frame(clinical_tstage=input$surgcstage,
+                  grade_group=gg_val(),
+                  age=input$surgoutage,
+                  psa=input$surgoutpsa,
+                  poscores=input$surgposcores,
+                  negcores=input$surgnegcores)
+  
+  pred_rf <- h2o.mojo_predict_df(frame=x, 
+                                 mojo_zip_path='mojo/h2o_lni_glm.zip',
+                                 genmodel_jar_path='mojo/h2o-genmodel.jar',
+                                 verbose = F)
+  value = pred_rf$X1
+  value = round(value * 100)
+  # print(paste("mojo value: ", value))
+
   flexdashboard::gauge(value, min = 0, max = 100, symbol = '%', flexdashboard::gaugeSectors(
     colors = '#4c9e90'
   ))
