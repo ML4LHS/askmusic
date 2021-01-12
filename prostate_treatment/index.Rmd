@@ -4,7 +4,7 @@ output: html_document
 runtime: shiny_prerendered
 ---
 
-# <img src='images/askmusic_logo.jpg' style='width: 10%'></img> Prostate Cancer Treatment Options
+# <img src='images/askmusic_logo.jpg' style='width: 10%'></img> <b>Prostate Cancer Treatment Options</b>
 
 #### This app is designed to provide men diagnosed with prostate cancer information about the treatment decisions made by other men from across the state of Michigan who share similar characteristics.
 
@@ -24,7 +24,7 @@ Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
  font-family: Roboto, sans-serif !important;
 }
 </style>
-=
+
 ```{r context='setup',include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(tibble)
@@ -138,8 +138,10 @@ conditionalPanel('input.tx_start>0 && (input.tx_t == "Do not know" || input.tx_n
 
 conditionalPanel('input.tx_start>0 && (input.tx_t != "Do not know" && input.tx_n != "Do not know")',
                  wellPanel(
-                   h1(textOutput('risk_label')),
-                   h5("According to the National Comprehensive Cancer Network, appropriate treatment options include: "),
+                   h2(htmlOutput('risk_label')),
+                   br(),
+                   h3("According to the National Comprehensive Cancer Network guidelines, appropriate treatment options include: "),
+                   br(),
                    h5(htmlOutput('rec')),
                    h5(htmlOutput('ascore'))
                  ))
@@ -222,14 +224,14 @@ conditionalPanel('input.tx_start>0 && input.tx_psa > 0.05 && input.tx_age >=45 &
 #
 # This function returns user's anomaly score (hence as)
 anomaly_score <- reactive({
-  age_rc = as.integer(input$tx_age)
-  psa = as.integer(input$tx_psa)
+  age_rc = as.numeric(input$tx_age)
+  psa = as.numeric(input$tx_psa)
   bxgs1 = as.integer(input$tx_bxgs_1)
   bxgs2 = as.integer(input$tx_bxgs_2)
   bxgs = bxgs1 + bxgs2
   totcores = as.integer(input$tx_totcores)
   poscores = as.integer(input$tx_poscores)
-  wgt = as.integer(input$tx_wgt)
+  wgt = as.numeric(input$tx_wgt)
   mi = input$tx_mi
   diab = input$tx_diab
  
@@ -255,16 +257,16 @@ anomaly_score <- reactive({
   anom_score
 })
 
-# This function checks for anonomally score, if its above certain threshold, we don't run the model
+# This function checks for anonomaly score, if its above certain threshold, we don't run the model
 tx_model_predictions = reactive({
-  age_rc = as.integer(input$tx_age)
-  psa = as.integer(input$tx_psa)
+  age_rc = as.numeric(input$tx_age)
+  psa = as.numeric(input$tx_psa)
   bxgs1 = as.integer(input$tx_bxgs_1)
   bxgs2 = as.integer(input$tx_bxgs_2)
   bxgs = bxgs1 + bxgs2
   totcores = as.integer(input$tx_totcores)
   poscores = as.integer(input$tx_poscores)
-  wgt = as.integer(input$tx_wgt)
+  wgt = as.numeric(input$tx_wgt)
   mi = input$tx_mi
   diab = input$tx_diab
   
@@ -347,9 +349,9 @@ ggfind = reactive({
 
 # LOW RISK
 low_risk = reactive({
-  if ((input$tx_t == 'T1' | input$tx_t == 'T2a') &
+  if ((input$tx_t %in% c('T1', 'T2a')) &
       ggfind() == 'GG1' &
-      input$tx_psa < 10) {
+      as.numeric(input$tx_psa) < 10) {
     return(TRUE)
   }
   return(FALSE)
@@ -358,28 +360,18 @@ low_risk = reactive({
 # FAVORABLE RISK
 favorable_risk = reactive({
   
-  # more_than_50_cores = (input$tx_poscores / input$tx_totcores) > 0.50
-  # 
-  # gg_val = ggfind()
-  # if (gg_val == 'GG1' & !low_risk()) {
-  #   return(TRUE)
-  # }
-  # 
-  # if (gg_val == 'GG2') {
-  #   if ((input$tx_poscores <= 3) & more_than_50_cores == FALSE) {
-  #     return(TRUE)
-  #   }
-  # }
-  # return(FALSE)
-    
   more_than_50_cores = (input$tx_poscores / input$tx_totcores) >= 0.50
 
   gg_val = ggfind()
-  psa = input$tx_psa
+  psa = as.numeric(input$tx_psa)
   counter = 0
   
-  if (gg_val == 'GG1' & !low_risk()) {
-     return(TRUE)
+  if (gg_val == 'GG1') {
+    if (!low_risk()) {
+      return(TRUE) 
+    } else {
+      return(FALSE)
+    }
   }
   
   if (input$tx_t == 'T2b' | input$tx_t == 'T2c') { counter = counter + 1 }
@@ -400,7 +392,7 @@ unfavorable_int_risk = reactive({
   more_than_50_cores = (input$tx_poscores / input$tx_totcores) >= 0.50
 
   gg_val = ggfind()
-  psa = input$tx_psa
+  psa = as.numeric(input$tx_psa)
   counter = 0
   
   if (input$tx_t == 'T2b' | input$tx_t == 'T2c') { counter = counter + 1 }
@@ -424,7 +416,7 @@ high_risk = reactive({
     return(TRUE)
   } else if (gg_val == 'GG4' | gg_val == 'GG5') {
     return(TRUE)
-  } else if (input$tx_psa > 20) {
+  } else if (as.numeric(input$tx_psa) > 20) {
     return(TRUE)
   }
   
@@ -455,7 +447,7 @@ risk_group = reactive({
   } else if (unfavorable_int_risk()) {
     op = 'Unfavorable Intermediate Risk'
   } else if (favorable_risk()) {
-    op = 'Favorable Risk'
+    op = 'Favorable Intermediate Risk'
   } else if (low_risk()) {
     op = 'Low Risk'
   } else {
@@ -466,18 +458,18 @@ risk_group = reactive({
 })
 
 # RECOMMENDATIONS
-t_low_risk = 'If your life expectancy is >10 years: Active Surveillance (preferred), EBRT or brachytherapy, RP <br> If your life expentancy is <10 years: Watchful Waiting'
+t_low_risk = 'If your life expectancy is more than 10 years, consider one of the following treatment options:<br><ul><li><b>active surveillance (preferred)</b></li><li>radiation</li><li>brachytherapy</li><li>radical prostatectomy (surgery)</li></ul><br><br>If your life expectancy is less than 10 years, consider <b>watchful waiting</b>.'
 
-t_fav_risk = 'If your life expectancy is >10 years: Consider Active Surveillance <br> If your life expectancy is <10 years: Watchful Waiting'
+t_fav_risk = 'If your life expectancy is more than 10 years, consider <b>active surveillance</b>.<br><br>If your life expectancy is less than 10 years, consider <b>watchful waiting</b>.'
 
-t_unfav_int_risk = 'If your life expectancy is >10 years: Radical prostatectomy, EBRT, EBRT with 4 months of ADT, EBRT with brachytherapy, EBRT with brachytherapy and 4 months of ADT <br> If your life expectancy is <10 years: Watchful Waiting (preferred), EBRT +/- ADT, EBRt + brachytherapy, EBRT + brachytherapy + ADT'
+t_unfav_int_risk = 'If your life expectancy is more than 10 years, consider one of the following treatment options:<br><ul><li>radical prostatectomy (surgery)</li><li>radiation alone</li><li>radiation with 4 months of androgen deprivation therapy</li><li>radiation with brachytherapy</li><li>radiation with brachytherapy and 4 months of androgen deprivation therapy.</li></ul><br><br>If your life expectancy is less than 10 years, consider one of the following treatment options:<br><ul><li><b>watchful waiting (preferred)</b></li><li>radiation alone</li><li>radiation with androgen deprivation therapy</li><li>radiation with brachytherapy</li><li>radiation with brachytherapy and androgen deprivation therapy</li></ul>'
 
-t_high_risk ='If your life expectancy is >5 years: EBRT with 18 months - 3 years of ADT, EBRT with brachytherapy and 1-3 years of ADT, radical prostatectomy <br> If your life expectancy is <5 years: Watchful Waiting, ADT, EBRT'
+t_high_risk ='If your life expectancy is more than 5 years, consider one of the following treatment options:<br><ul><li>radiation with 18 months - 3 years of androgen deprivation therapy</li><li>radiation with brachytherapy and 1-3 years of androgen deprivation therapy</li><li>radical prostatectomy</li></ul><br><br>If your life expectancy is less than 5 years, consider one of the following treatment options: <br><ul><li>watchful waiting</li><li>androgen deprivation therapy</li><li>radiation</li></ul>'
 
-t_very_high_risk = 'If your life expectancy is <5 years: Watchful Waiting, ADT, EBRT <br> If your life expectancy is >5 years: EBRT + ADT, EBRT + brachytherapy + ADT, radical prostatectomy'
+t_very_high_risk = 'If your life expectancy is less than 5 years, consider one of the following treatment options:<br><ul><li>watchful waiting</li><li>androgen deperivation therapy</li><li>radiation</li></ul><br><br>If your life expectancy is more than 5 years, consider one of the following treatment options:<br><ul><li>radiation with androgen deprivation therapy</li><li>radiation with brachytherapy</li><li>androgen deprivation therapy</li><li>radical prostatectomy (surgery)</li></ul>'
 
 output$risk_label <- renderText({
-  paste("According to the National Comprehensive Cancer Center, your cancer is categorized as: ", risk_group())
+  HTML(paste("According to the National Comprehensive Cancer Network guidelines, cancer is categorized as: ", tags$b(risk_group())))
 })
 
 output$rec <- renderUI({
@@ -486,7 +478,7 @@ output$rec <- renderUI({
     'Very High Risk'=HTML(t_very_high_risk),
     'High Risk'=HTML(t_high_risk),
     'Unfavorable Intermediate Risk'=HTML(t_unfav_int_risk),
-    'Favorable Risk'=HTML(t_fav_risk),
+    'Favorable Intermediate Risk'=HTML(t_fav_risk),
     'Low Risk'=HTML(t_low_risk)
   )
 })
