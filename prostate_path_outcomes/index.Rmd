@@ -3,7 +3,7 @@ title: ''
 author: ''
 date: ''
 output: html_document
-runtime: shiny_prerendered
+runtime: shiny
 ---
 
 <script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
@@ -107,8 +107,8 @@ conditionalPanel('input.surgoutstart>0 && input.surgoutpsa > 0.05',
                       flexdashboard::gaugeOutput("calculate_MUSIC_LNI_prob")
                     )
                   )
-                 ), #end well panel    
-                        actionButton('mskout','View MSK Model')
+                 ) #end well panel    
+                  #actionButton('mskout','View MSK Model')
 ) #end conditional panel
 
 conditionalPanel('input.surgoutstart>0 && input.surgoutpsa > 0.05 && input.mskout % 2 == 1',
