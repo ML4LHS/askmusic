@@ -159,7 +159,7 @@ conditionalPanel('input.start > 0',
                    h4('A score of 60-72 means good sexual function.'),
                    h4('A score of 73 or greater means very good sexual function.'),
                    p(HTML('Where do these numbers come from? The first three (0-40, 41-59, and 60+) come from <a href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5636214/">Table 3 of this paper by Vertosick and colleagues</a>. The 73+ comes from <a href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6584627/">this paper by Singh and colleagues</a>.')),
-                   h3('In addition to predicting your overall sexual function (the EPIC-26 sexual domain score), this app also predicts your long-term chance of having erections firm enough for intercourse.'),
+                   h3('In addition to predicting your overall sexual function (the EPIC-26 sexual domain score), this app also predicts your long-term chance of having erections firm enough for intercourse.')
                    ))
 ```
 
