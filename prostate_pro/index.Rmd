@@ -1,0 +1,338 @@
+---
+title: ''
+output: html_document
+runtime: shiny_prerendered
+---
+
+# <img src='images/askmusic_logo.jpg' style='width: 10%'></img> <b>Radical Prostatectomy Patient-Reported Outcomes</b>
+
+#### This app is designed to provide men with prostate cancer who are undergoing or have undergone a radical prostatectomy information about their expected patient-reported outcomes.
+
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
+
+<script>
+Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
+  $('html, body').animate({
+      scrollTop: $("#"+targetid).offset().top - 75
+  }, 1000);
+});
+</script>
+
+<style>
+* {
+ font-family: Roboto, sans-serif !important;
+}
+</style>
+
+```{r context='setup',include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(stringr)
+library(shiny)
+#library(jsonlite)
+library(RColorBrewer)
+library(h2o)
+library(glue)
+
+```
+
+```{r input}
+wellPanel(style = "background: #FFF;",
+          selectInput("dyncat", "Have you had your prostate removed yet?",
+                      choices = c("No - before surgery" = "baseline",
+                                  "Yes - 3 months after surgery"  = "mo3",
+                                  "Yes - 6 months after surgery"  = "mo6",
+                                  "Yes - 12 months after surgery" = "mo12"),
+                      selected = 'baseline'),
+          br(),
+          h4('Please enter the following information with your urologist.'),
+          flowLayout(
+            sliderInput('age','Age', value = 60, min = 45,max = 85,step = 1),
+            sliderInput('psa','Prostate-specific antigen (ng/mL)',value = 6, min = 0, max=20, step = 1),
+            sliderInput('bmi', 'Body mass index', value=25, min = 15, max = 40, step = 1),
+            sliderInput('glandvol', 'Prostate gland volume (mL)', value=25, min=0, max=200, step = 1),
+            selectInput('bxgs_1','Primary Gleason score',
+                        c('Less than or equal to 3'=3,
+                          '4'=4,
+                          '5'=5),
+                        selected = 3),
+            selectInput('bxgs_2','Secondary Gleason score',
+                        c('Less than or equal to 3'=3,
+                          '4'=4,
+                          '5'=5),
+                        selected = 3),
+            selectInput('diab','Do you have diabetes?',
+                        choices=c('No','Yes'),selected='No')
+      ),
+      h4('Please answer these questions based on your recent sexual function.'),
+      flowLayout(
+        selectInput('sexual_satisfaction', 'When you have had a sexual activity, how satisfying has it been?',
+                    choices = 
+                      c('Not at all' = 1,
+                      'A little bit' = 2,
+                      'Somewhat' = 3,
+                      'Quite a bit' = 4,
+                      'Very much' = 5), selected = 1),
+        selectInput('epic_57', 'How would you rate your ability to have an erection during the last 4 weeks?',
+                    choices = 
+                      c('Very poor to none' = 1,
+                        'Poor' = 2,
+                        'Fair' = 3,
+                        'Good' = 4,
+                        'Very good' = 5), selected = 1),
+        selectInput('epic_58', 'How would you rate your ability to reach orgasm (climax) during the last 4 weeks?',
+                    choices = 
+                      c('Very poor to none' = 1,
+                        'Poor' = 2,
+                        'Fair' = 3,
+                        'Good' = 4,
+                        'Very good' = 5), selected = 1),
+        selectInput('epic_59', 'How would you describe the QUALITY of your erections during the last 4 weeks?',
+                    choices = 
+                      c('None at all' = 1,
+                        'Not firm enough for any sexual activity' = 2,
+                        'Firm enough for masturbation and foreplay only' = 3,
+                        'Firm enough for intercourse' = 4), selected = 1),
+        selectInput('epic_60', 'How would you describe the FREQUENCY of your erections during the last 4 weeks?',
+                    choices = 
+                      c('I NEVER had an erection when I wanted one' = 1,
+                        'I had an erection LESS THAN HALF the time I wanted one' = 2,
+                        'I had an erection ABOUT HALF the time I wanted one' = 3,
+                        'I had an erection MORE THAN HALF the time I wanted one' = 4,
+                        'I had an erection WHENEVER I wanted one' = 5), selected = 1),
+        selectInput('epic_64', 'Overall, how would your rate your ability to functional sexually during the last 4 weeks?',
+                    choices = 
+                      c('Very poor' = 1,
+                        'Poor' = 2,
+                        'Fair' = 3,
+                        'Good' = 4,
+                        'Very good' = 5), selected = 1),
+        selectInput('epic_68', 'Overall, how big a problem has your sexual function or lack of sexual function been for your during the last 4 weeks?',
+                    choices = 
+                      c('No problem' = 1,
+                        'Very small problem' = 2,
+                        'Small problem' = 3,
+                        'Moderate problem' = 4,
+                        'Big problem' = 5), selected = 1)
+      ),  
+      br(),
+      actionButton('start','Calculate')
+)
+```
+
+```{r output}
+conditionalPanel('input.start > 0',
+                 wellPanel(id='results', style = "background: #FFF;",
+                   h2(HTML('<b>Current sexual function</b>')),        
+                   h3('Currently, your overall sexual function is:'),
+                   h3(htmlOutput('current_sds'))
+                   ))
+
+conditionalPanel('input.start > 0 && !input.dyncat.includes(\"mo12\")',
+                 wellPanel(id='results12', style = "background: #FFF;",
+                   h2(HTML('<b>12 Months</b>')),        
+                   h3('At 12 months following surgery, your predicted overall sexual function is:'),
+                   h3(htmlOutput('mo12_sds')),
+                   h3('At 12 months following surgery, your chance of having erections firm enough for intercourse is:'),
+                   h3(htmlOutput('mo12_eq_high'))
+                   ))
+
+conditionalPanel('input.start>0',
+                 wellPanel(id='results24', style = "background: #FFF;",
+                   h2(HTML('<b>24 Months</b>')),        
+                   h3('At 24 months following surgery, your predicted overall sexual function is:'),
+                   h3(htmlOutput('mo24_sds')),
+                   h3('At 24 months following surgery, your chance of having erections firm enough for intercourse is:'),
+                   h3(htmlOutput('mo24_eq_high'))
+                   ))
+                
+conditionalPanel('input.start > 0',
+                 wellPanel(id='instructions', style = "background: #FFF;",
+                   h2('What does this mean? Here is information to put these scores into context.'),
+                   h3('EPIC-26 is a survey that captures different aspects of urinary, sexual, and bowel function in patients undergoing treatment for prostate cancer. This app predicts your long-term sexual function based on the information you provided.'),
+                   h4('A score of 0-40 means poor sexual function.'),
+                   h4('A score of 41-59 means intermediate sexual function.'),
+                   h4('A score of 60-72 means good sexual function.'),
+                   h4('A score of 73 or greater means very good sexual function.'),
+                   p(HTML('Where do these numbers come from? The first three (0-40, 41-59, and 60+) come from <a href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5636214/">Table 3 of this paper by Vertosick and colleagues</a>. The 73+ comes from <a href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6584627/">this paper by Singh and colleagues</a>.')),
+                   h3('In addition to predicting your overall sexual function (the EPIC-26 sexual domain score), this app also predicts your long-term chance of having erections firm enough for intercourse.'),
+                   ))
+```
+
+```{r predictions, context='server'}
+  observeEvent(input$start, {
+    session$sendCustomMessage('scrolltoresults', 'results')
+  })
+
+ggfind = reactive({
+  b1 = as.integer(input$bxgs_1)
+  b2 = as.integer(input$bxgs_2)
+  if ((b1 + b2) == 6) {
+    gg = 'GG1'
+  } else if (b1 == 3 & b2 == 4) {
+    gg = 'GG2'
+  } else if (b1 == 4 & b2 == 3) {
+    gg = 'GG3'
+  } else if ((b1 + b2) == 8) {
+    gg = 'GG4'
+  } else if ((b1 + b2) >= 9){
+    gg = 'GG5'
+  }
+  gg
+})
+
+calculate_predictions = reactive({
+  age = as.integer(input$age)
+  bmi = as.integer(input$bmi)
+  diabetes = ifelse(input$diab=='Yes', 1, 0)
+  glandvol = as.integer(input$glandvol)
+  psa = as.integer(input$psa)
+  gleason_grade = ggfind()
+  dynamic_category = input$dyncat
+  sexual_satisfaction = as.integer(input$sexual_satisfaction)
+  epic_sds = mean(
+    c((as.integer(input$epic_57) - 1) * 25,
+    (as.integer(input$epic_58) - 1) * 25, 
+    round((as.integer(input$epic_59) - 1) * 33.3), 
+    (as.integer(input$epic_60) - 1) * 25,
+    (as.integer(input$epic_64) - 1) * 25,
+    (5 - as.integer(input$epic_68)) * 25
+    ))
+  
+  baseline_sexual_satisfaction = NA_integer_
+  baseline_epic_sexualdomainscore = NA_integer_
+  mo3_sexual_satisfaction = NA_integer_
+  mo3_epic_sexualdomainscore = NA_integer_
+  mo6_sexual_satisfaction = NA_integer_
+  mo6_epic_sexualdomainscore = NA_integer_
+  mo12_sexual_satisfaction = NA_integer_
+  mo12_epic_sexualdomainscore = NA_integer_
+  
+  if (dynamic_category == 'baseline') {
+    baseline_sexual_satisfaction = sexual_satisfaction
+    baseline_epic_sexualdomainscore = epic_sds
+  } else if (dynamic_category == 'mo3') {
+    mo3_sexual_satisfaction = sexual_satisfaction
+    mo3_epic_sexualdomainscore = epic_sds
+  } else if (dynamic_category == 'mo6') {
+    mo6_sexual_satisfaction = sexual_satisfaction
+    mo6_epic_sexualdomainscore = epic_sds
+  } else if (dynamic_category == 'mo12') {
+    mo12_sexual_satisfaction = sexual_satisfaction
+    mo12_epic_sexualdomainscore = epic_sds
+  } else {
+    stop('Dynamic category could not be found.')
+  }
+  
+  prediction_df = tibble(outcome_time = c('mo12', 'mo24'),
+                         age,
+                         bmi,
+                         diabetes,
+                         glandvol,
+                         psa,
+                         gleason_grade,
+                         dynamic_category,
+                         baseline_sexual_satisfaction,
+                         baseline_epic_sexualdomainscore,
+                         mo3_sexual_satisfaction,
+                         mo3_epic_sexualdomainscore,
+                         mo6_sexual_satisfaction,
+                         mo6_epic_sexualdomainscore,
+                         mo12_sexual_satisfaction,
+                         mo12_epic_sexualdomainscore)
+  
+  
+  pred_epic_sds = h2o.mojo_predict_df(frame=prediction_df, 
+                                   mojo_zip_path='models/h2o_rf_epic_sexualdomainscore.zip',
+                                   genmodel_jar_path='models/h2o-genmodel.jar',
+                                   verbose = F)
+  
+   pred_erection_quality_high = h2o.mojo_predict_df(frame=prediction_df, 
+                                   mojo_zip_path='models/h2o_rf_outcome_erection_quality_high.zip',
+                                   genmodel_jar_path='models/h2o-genmodel.jar',
+                                   verbose = F)
+   
+   list(pred_epic_sds = pred_epic_sds,
+        pred_erection_quality_high = pred_erection_quality_high,
+        epic_sds = epic_sds)
+})
+
+
+output$current_sds <- renderText({ 
+  prediction = calculate_predictions()[['epic_sds']]
+  
+  prediction = round(prediction)
+  
+  if (prediction >= 73) {
+    prediction = paste(prediction, '(very good function)')
+  } else if (prediction >= 60) {
+    prediction = paste(prediction, '(good function)')
+  } else if (prediction > 40) {
+    prediction = paste(prediction, '(intermediate function)')
+  } else {
+    prediction = paste(prediction, '(poor function)')
+  }
+  
+  paste0('<b>', prediction, '</b>')
+  })
+
+output$mo12_sds <- renderText({ 
+  prediction = calculate_predictions()[['pred_epic_sds']] %>% 
+    slice(1) %>% 
+    pull(predict)
+  
+  prediction = round(prediction)
+  
+  if (prediction >= 73) {
+    prediction = paste(prediction, '(very good function)')
+  } else if (prediction >= 60) {
+    prediction = paste(prediction, '(good function)')
+  } else if (prediction > 40) {
+    prediction = paste(prediction, '(intermediate function)')
+  } else {
+    prediction = paste(prediction, '(poor function)')
+  }
+  
+  paste0('<b>', prediction, '</b>')
+  })
+
+output$mo24_sds <- renderText({ 
+  prediction = calculate_predictions()[['pred_epic_sds']] %>% 
+    slice(2) %>% 
+    pull(predict)
+  
+  prediction = round(prediction)
+  
+  if (prediction >= 73) {
+    prediction = paste(prediction, '(very good function)')
+  } else if (prediction >= 60) {
+    prediction = paste(prediction, '(good function)')
+  } else if (prediction > 40) {
+    prediction = paste(prediction, '(intermediate function)')
+  } else {
+    prediction = paste(prediction, '(poor function)')
+  }
+  
+  paste0('<b>', prediction, '</b>')
+})
+
+output$mo12_eq_high <- renderText({ 
+  prediction = calculate_predictions()[['pred_erection_quality_high']] %>% 
+    slice(1) %>% 
+    pull(Yes)
+  
+  prediction = paste0('<b>', round(prediction * 100), '%</b>')
+})
+
+output$mo24_eq_high <- renderText({ 
+  prediction = calculate_predictions()[['pred_erection_quality_high']] %>% 
+    slice(2) %>% 
+    pull(Yes)
+  
+  prediction = paste0('<b>', round(prediction * 100), '%</b>')
+})
+```

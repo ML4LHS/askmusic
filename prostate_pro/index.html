@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>index.utf8</title>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="fluid-row" id="section-header">
+
+
+
+
+</div>
+
+
+<div id="section-radical-prostatectomy-patient-reported-outcomes" class="section level1">
+<h1><img src='images/askmusic_logo.jpg' style='width: 10%'></img> <b>Radical Prostatectomy Patient-Reported Outcomes</b></h1>
+<div id="section-this-app-is-designed-to-provide-men-with-prostate-cancer-who-are-undergoing-or-have-undergone-a-radical-prostatectomy-information-about-their-expected-patient-reported-outcomes." class="section level4">
+<h4>This app is designed to provide men with prostate cancer who are undergoing or have undergone a radical prostatectomy information about their expected patient-reported outcomes.</h4>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.1/iframeResizer.contentWindow.min.js'></script>
+<script>
+Shiny.addCustomMessageHandler("scrolltoresults", function(targetid) {
+  $('html, body').animate({
+      scrollTop: $("#"+targetid).offset().top - 75
+  }, 1000);
+});
+</script>
+<style>
+* {
+ font-family: Roboto, sans-serif !important;
+}
+</style>
+<div class="well" style="background: #FFF;">
+<div class="form-group shiny-input-container">
+<label class="control-label" id="dyncat-label" for="dyncat">Have you had your prostate removed yet?</label>
+<div>
+<select id="dyncat"><option value="baseline" selected>No - before surgery</option>
+<option value="mo3">Yes - 3 months after surgery</option>
+<option value="mo6">Yes - 6 months after surgery</option>
+<option value="mo12">Yes - 12 months after surgery</option></select>
+<script type="application/json" data-for="dyncat" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+<br/>
+<h4>Please enter the following information with your urologist.</h4>
+<div class="shiny-flow-layout">
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="age-label" for="age">Age</label>
+<input class="js-range-slider" id="age" data-skin="shiny" data-min="45" data-max="85" data-from="60" data-step="1" data-grid="true" data-grid-num="10" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="psa-label" for="psa">Prostate-specific antigen (ng/mL)</label>
+<input class="js-range-slider" id="psa" data-skin="shiny" data-min="0" data-max="20" data-from="6" data-step="1" data-grid="true" data-grid-num="10" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="bmi-label" for="bmi">Body mass index</label>
+<input class="js-range-slider" id="bmi" data-skin="shiny" data-min="15" data-max="40" data-from="25" data-step="1" data-grid="true" data-grid-num="8.33333333333333" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="glandvol-label" for="glandvol">Prostate gland volume (mL)</label>
+<input class="js-range-slider" id="glandvol" data-skin="shiny" data-min="0" data-max="200" data-from="25" data-step="1" data-grid="true" data-grid-num="10" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="bxgs_1-label" for="bxgs_1">Primary Gleason score</label>
+<div>
+<select id="bxgs_1"><option value="3" selected>Less than or equal to 3</option>
+<option value="4">4</option>
+<option value="5">5</option></select>
+<script type="application/json" data-for="bxgs_1" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="bxgs_2-label" for="bxgs_2">Secondary Gleason score</label>
+<div>
+<select id="bxgs_2"><option value="3" selected>Less than or equal to 3</option>
+<option value="4">4</option>
+<option value="5">5</option></select>
+<script type="application/json" data-for="bxgs_2" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="diab-label" for="diab">Do you have diabetes?</label>
+<div>
+<select id="diab"><option value="No" selected>No</option>
+<option value="Yes">Yes</option></select>
+<script type="application/json" data-for="diab" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+</div>
+<h4>Please answer these questions based on your recent sexual function.</h4>
+<div class="shiny-flow-layout">
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="sexual_satisfaction-label" for="sexual_satisfaction">When you have had a sexual activity, how satisfying has it been?</label>
+<div>
+<select id="sexual_satisfaction"><option value="1" selected>Not at all</option>
+<option value="2">A little bit</option>
+<option value="3">Somewhat</option>
+<option value="4">Quite a bit</option>
+<option value="5">Very much</option></select>
+<script type="application/json" data-for="sexual_satisfaction" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="epic_57-label" for="epic_57">How would you rate your ability to have an erection during the last 4 weeks?</label>
+<div>
+<select id="epic_57"><option value="1" selected>Very poor to none</option>
+<option value="2">Poor</option>
+<option value="3">Fair</option>
+<option value="4">Good</option>
+<option value="5">Very good</option></select>
+<script type="application/json" data-for="epic_57" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="epic_58-label" for="epic_58">How would you rate your ability to reach orgasm (climax) during the last 4 weeks?</label>
+<div>
+<select id="epic_58"><option value="1" selected>Very poor to none</option>
+<option value="2">Poor</option>
+<option value="3">Fair</option>
+<option value="4">Good</option>
+<option value="5">Very good</option></select>
+<script type="application/json" data-for="epic_58" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="epic_59-label" for="epic_59">How would you describe the QUALITY of your erections during the last 4 weeks?</label>
+<div>
+<select id="epic_59"><option value="1" selected>None at all</option>
+<option value="2">Not firm enough for any sexual activity</option>
+<option value="3">Firm enough for masturbation and foreplay only</option>
+<option value="4">Firm enough for intercourse</option></select>
+<script type="application/json" data-for="epic_59" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="epic_60-label" for="epic_60">How would you describe the FREQUENCY of your erections during the last 4 weeks?</label>
+<div>
+<select id="epic_60"><option value="1" selected>I NEVER had an erection when I wanted one</option>
+<option value="2">I had an erection LESS THAN HALF the time I wanted one</option>
+<option value="3">I had an erection ABOUT HALF the time I wanted one</option>
+<option value="4">I had an erection MORE THAN HALF the time I wanted one</option>
+<option value="5">I had an erection WHENEVER I wanted one</option></select>
+<script type="application/json" data-for="epic_60" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="epic_64-label" for="epic_64">Overall, how would your rate your ability to functional sexually during the last 4 weeks?</label>
+<div>
+<select id="epic_64"><option value="1" selected>Very poor</option>
+<option value="2">Poor</option>
+<option value="3">Fair</option>
+<option value="4">Good</option>
+<option value="5">Very good</option></select>
+<script type="application/json" data-for="epic_64" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+<div>
+<div class="form-group shiny-input-container">
+<label class="control-label" id="epic_68-label" for="epic_68">Overall, how big a problem has your sexual function or lack of sexual function been for your during the last 4 weeks?</label>
+<div>
+<select id="epic_68"><option value="1" selected>No problem</option>
+<option value="2">Very small problem</option>
+<option value="3">Small problem</option>
+<option value="4">Moderate problem</option>
+<option value="5">Big problem</option></select>
+<script type="application/json" data-for="epic_68" data-nonempty="">{"plugins":["selectize-plugin-a11y"]}</script>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<button id="start" type="button" class="btn btn-default action-button">Calculate</button>
+</div>
+<p><div data-display-if="input.start &gt; 0" data-ns-prefix="">
+<div class="well" id="results" style="background: #FFF;">
+<h2><b>Current sexual function</b></h2>
+<h3>Currently, your overall sexual function is:</h3>
+<h3>
+<div id="current_sds" class="shiny-html-output"></div>
+</h3>
+</div>
+</div><div data-display-if="input.start &gt; 0 &amp;&amp; !input.dyncat.includes(&quot;mo12&quot;)" data-ns-prefix="">
+<div class="well" id="results12" style="background: #FFF;">
+<h2><b>12 Months</b></h2>
+<h3>At 12 months following surgery, your predicted overall sexual function is:</h3>
+<h3>
+<div id="mo12_sds" class="shiny-html-output"></div>
+</h3>
+<h3>At 12 months following surgery, your chance of having erections firm enough for intercourse is:</h3>
+<h3>
+<div id="mo12_eq_high" class="shiny-html-output"></div>
+</h3>
+</div>
+</div><div data-display-if="input.start&gt;0" data-ns-prefix="">
+<div class="well" id="results24" style="background: #FFF;">
+<h2><b>24 Months</b></h2>
+<h3>At 24 months following surgery, your predicted overall sexual function is:</h3>
+<h3>
+<div id="mo24_sds" class="shiny-html-output"></div>
+</h3>
+<h3>At 24 months following surgery, your chance of having erections firm enough for intercourse is:</h3>
+<h3>
+<div id="mo24_eq_high" class="shiny-html-output"></div>
+</h3>
+</div>
+</div><div data-display-if="input.start &gt; 0" data-ns-prefix="">
+<div class="well" id="instructions" style="background: #FFF;">
+<h2>What does this mean? Here is information to put these scores into context.</h2>
+<h3>EPIC-26 is a survey that captures different aspects of urinary, sexual, and bowel function in patients undergoing treatment for prostate cancer. This app predicts your long-term sexual function based on the information you provided.</h3>
+<h4>A score of 0-40 means poor sexual function.</h4>
+<h4>A score of 41-59 means intermediate sexual function.</h4>
+<h4>A score of 60-72 means good sexual function.</h4>
+<h4>A score of 73 or greater means very good sexual function.</h4>
+<p>Where do these numbers come from? The first three (0-40, 41-59, and 60+) come from <a href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5636214/">Table 3 of this paper by Vertosick and colleagues</a>. The 73+ comes from <a href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6584627/">this paper by Singh and colleagues</a>.</p>
+<h3>In addition to predicting your overall sexual function (the EPIC-26 sexual domain score), this app also predicts your long-term chance of having erections firm enough for intercourse.</h3>
+</div>
+</div></p>
+
+<script type="application/shiny-prerendered" data-context="server-start">
+knitr::opts_chunk$set(echo = FALSE)
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(stringr)
+library(shiny)
+#library(jsonlite)
+library(RColorBrewer)
+library(h2o)
+library(glue)
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+  observeEvent(input$start, {
+    session$sendCustomMessage('scrolltoresults', 'results')
+  })
+
+ggfind = reactive({
+  b1 = as.integer(input$bxgs_1)
+  b2 = as.integer(input$bxgs_2)
+  if ((b1 + b2) == 6) {
+    gg = 'GG1'
+  } else if (b1 == 3 & b2 == 4) {
+    gg = 'GG2'
+  } else if (b1 == 4 & b2 == 3) {
+    gg = 'GG3'
+  } else if ((b1 + b2) == 8) {
+    gg = 'GG4'
+  } else if ((b1 + b2) >= 9){
+    gg = 'GG5'
+  }
+  gg
+})
+
+calculate_predictions = reactive({
+  age = as.integer(input$age)
+  bmi = as.integer(input$bmi)
+  diabetes = ifelse(input$diab=='Yes', 1, 0)
+  glandvol = as.integer(input$glandvol)
+  psa = as.integer(input$psa)
+  gleason_grade = ggfind()
+  dynamic_category = input$dyncat
+  sexual_satisfaction = as.integer(input$sexual_satisfaction)
+  epic_sds = mean(
+    c((as.integer(input$epic_57) - 1) * 25,
+    (as.integer(input$epic_58) - 1) * 25, 
+    round((as.integer(input$epic_59) - 1) * 33.3), 
+    (as.integer(input$epic_60) - 1) * 25,
+    (as.integer(input$epic_64) - 1) * 25,
+    (5 - as.integer(input$epic_68)) * 25
+    ))
+  
+  baseline_sexual_satisfaction = NA_integer_
+  baseline_epic_sexualdomainscore = NA_integer_
+  mo3_sexual_satisfaction = NA_integer_
+  mo3_epic_sexualdomainscore = NA_integer_
+  mo6_sexual_satisfaction = NA_integer_
+  mo6_epic_sexualdomainscore = NA_integer_
+  mo12_sexual_satisfaction = NA_integer_
+  mo12_epic_sexualdomainscore = NA_integer_
+  
+  if (dynamic_category == 'baseline') {
+    baseline_sexual_satisfaction = sexual_satisfaction
+    baseline_epic_sexualdomainscore = epic_sds
+  } else if (dynamic_category == 'mo3') {
+    mo3_sexual_satisfaction = sexual_satisfaction
+    mo3_epic_sexualdomainscore = epic_sds
+  } else if (dynamic_category == 'mo6') {
+    mo6_sexual_satisfaction = sexual_satisfaction
+    mo6_epic_sexualdomainscore = epic_sds
+  } else if (dynamic_category == 'mo12') {
+    mo12_sexual_satisfaction = sexual_satisfaction
+    mo12_epic_sexualdomainscore = epic_sds
+  } else {
+    stop('Dynamic category could not be found.')
+  }
+  
+  prediction_df = tibble(outcome_time = c('mo12', 'mo24'),
+                         age,
+                         bmi,
+                         diabetes,
+                         glandvol,
+                         psa,
+                         gleason_grade,
+                         dynamic_category,
+                         baseline_sexual_satisfaction,
+                         baseline_epic_sexualdomainscore,
+                         mo3_sexual_satisfaction,
+                         mo3_epic_sexualdomainscore,
+                         mo6_sexual_satisfaction,
+                         mo6_epic_sexualdomainscore,
+                         mo12_sexual_satisfaction,
+                         mo12_epic_sexualdomainscore)
+  
+  
+  pred_epic_sds = h2o.mojo_predict_df(frame=prediction_df, 
+                                   mojo_zip_path='models/h2o_rf_epic_sexualdomainscore.zip',
+                                   genmodel_jar_path='models/h2o-genmodel.jar',
+                                   verbose = F)
+  
+   pred_erection_quality_high = h2o.mojo_predict_df(frame=prediction_df, 
+                                   mojo_zip_path='models/h2o_rf_outcome_erection_quality_high.zip',
+                                   genmodel_jar_path='models/h2o-genmodel.jar',
+                                   verbose = F)
+   
+   list(pred_epic_sds = pred_epic_sds,
+        pred_erection_quality_high = pred_erection_quality_high,
+        epic_sds = epic_sds)
+})
+
+
+output$current_sds <- renderText({ 
+  prediction = calculate_predictions()[['epic_sds']]
+  
+  prediction = round(prediction)
+  
+  if (prediction >= 73) {
+    prediction = paste(prediction, '(very good function)')
+  } else if (prediction >= 60) {
+    prediction = paste(prediction, '(good function)')
+  } else if (prediction > 40) {
+    prediction = paste(prediction, '(intermediate function)')
+  } else {
+    prediction = paste(prediction, '(poor function)')
+  }
+  
+  paste0('<b>', prediction, '<\u002fb>')
+  })
+
+output$mo12_sds <- renderText({ 
+  prediction = calculate_predictions()[['pred_epic_sds']] %>% 
+    slice(1) %>% 
+    pull(predict)
+  
+  prediction = round(prediction)
+  
+  if (prediction >= 73) {
+    prediction = paste(prediction, '(very good function)')
+  } else if (prediction >= 60) {
+    prediction = paste(prediction, '(good function)')
+  } else if (prediction > 40) {
+    prediction = paste(prediction, '(intermediate function)')
+  } else {
+    prediction = paste(prediction, '(poor function)')
+  }
+  
+  paste0('<b>', prediction, '<\u002fb>')
+  })
+
+output$mo24_sds <- renderText({ 
+  prediction = calculate_predictions()[['pred_epic_sds']] %>% 
+    slice(2) %>% 
+    pull(predict)
+  
+  prediction = round(prediction)
+  
+  if (prediction >= 73) {
+    prediction = paste(prediction, '(very good function)')
+  } else if (prediction >= 60) {
+    prediction = paste(prediction, '(good function)')
+  } else if (prediction > 40) {
+    prediction = paste(prediction, '(intermediate function)')
+  } else {
+    prediction = paste(prediction, '(poor function)')
+  }
+  
+  paste0('<b>', prediction, '<\u002fb>')
+})
+
+output$mo12_eq_high <- renderText({ 
+  prediction = calculate_predictions()[['pred_erection_quality_high']] %>% 
+    slice(1) %>% 
+    pull(Yes)
+  
+  prediction = paste0('<b>', round(prediction * 100), '%<\u002fb>')
+})
+
+output$mo24_eq_high <- renderText({ 
+  prediction = calculate_predictions()[['pred_erection_quality_high']] %>% 
+    slice(2) %>% 
+    pull(Yes)
+  
+  prediction = paste0('<b>', round(prediction * 100), '%<\u002fb>')
+})
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/bootstrap.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["selectize"]},{"type":"character","attributes":{},"value":["0.12.4"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["href"]}},"value":[{"type":"character","attributes":{},"value":["shared/selectize"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/selectize.min.js","accessibility/js/selectize-plugin-a11y.min.js"]},{"type":"character","attributes":{},"value":["css/selectize.bootstrap3.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ionrangeslider-javascript"]},{"type":"character","attributes":{},"value":["2.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["href"]}},"value":[{"type":"character","attributes":{},"value":["shared/ionrangeslider"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/ion.rangeSlider.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["strftime"]},{"type":"character","attributes":{},"value":["0.9.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["href"]}},"value":[{"type":"character","attributes":{},"value":["shared/strftime"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["strftime-min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ionrangeslider-css"]},{"type":"character","attributes":{},"value":["2.3.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["href"]}},"value":[{"type":"character","attributes":{},"value":["shared/ionrangeslider"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/ion.rangeSlider.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"logical","attributes":{},"value":[true]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]}},"value":[{"type":"character","attributes":{},"value":["base","bitops","bslib","colorspace","compiler","crayon","datasets","digest","dplyr","ellipsis","evaluate","fastmap","generics","ggplot2","glue","graphics","grDevices","grid","gtable","h2o","htmltools","httpuv","jquerylib","jsonlite","knitr","later","lifecycle","magrittr","methods","mime","munsell","pillar","pkgconfig","promises","purrr","R6","RColorBrewer","Rcpp","RCurl","rlang","rmarkdown","sass","scales","shiny","stats","stringi","stringr","tibble","tidyr","tidyselect","tools","utils","vctrs","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["3.6.0","1.0-6","0.2.4","1.4-1","3.6.0","1.3.4","3.6.0","0.6.25","1.0.2","0.3.1","0.14","1.1.0","0.0.2","3.3.2","1.4.2","3.6.0","3.6.0","3.6.0","0.3.0","3.32.0.5","0.5.1.1","1.5.5","0.1.3","1.7.1","1.30","1.1.0.1","0.2.0","1.5","3.6.0","0.9","0.5.0","1.4.6","2.0.3","1.1.1","0.3.4","2.4.1","1.1-2","1.0.5","1.98-1.2","0.4.10","2.3","0.3.1","1.1.1","1.6.0","3.6.0","1.4.6","1.4.0","3.0.3","1.1.2","1.1.0","3.6.0","3.6.0","0.3.4","2.3.0","0.17","1.8-4","2.2.1"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
