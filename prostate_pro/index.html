@@ -499,7 +499,7 @@ calculate_predictions = reactive({
   
   
   pred_epic_sds = h2o.mojo_predict_df(frame=prediction_df, 
-                                   mojo_zip_path='models/h2o_rf_epic_sexualdomainscore.zip',
+                                   mojo_zip_path='models/h2o_rf_epic_sexualdomainscore_200.zip',
                                    genmodel_jar_path='models/h2o-genmodel.jar',
                                    verbose = F)
   
