@@ -1,12 +1,10 @@
 ---
-title: ''
+title: '<img src="images/askmusic_logo.jpg" style="width: 10%"></img> <b>Radical Prostatectomy Pathologic Outcomes</b>'
 author: ''
 date: ''
 output: html_document
 runtime: shiny_prerendered
 ---
-
-# <img src='images/askmusic_logo.jpg' style='width: 10%'></img> <b>Radical Prostatectomy Pathologic Outcomes</b>
 
 #### This app helps urologists communicate to patients the risk of different pathologic findings at the time of radical prostatectomy for treatment of prostate cancer. The app is meant to be used as part of pre-operative counseling.
 
@@ -60,7 +58,7 @@ wellPanel(style = "background: #FFF;",
             sliderInput('surgposcores', 'Positive Cores', min=0, max=20, step=1, value=4),
             sliderInput('surgnegcores', 'Negative Cores', min=0, max=20, step=1, value=8),
             selectInput('surgcstage', 'Clinical Stage',
-                        choices=c('T1' = '1,',
+                        choices=c('T1' = '1',
                                   'T2a' = '2a',
                                   'T2b' = '2b',
                                   'T2c' = '2c',
